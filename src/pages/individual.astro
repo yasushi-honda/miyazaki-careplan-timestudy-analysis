@@ -1,9 +1,311 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import AnalysisChart from '../components/AnalysisChart.astro';
+import { loadCsvData, generateDummyData, aggregateSharingTimes } from '../data/csvData.js';
+
+// データを取得
+let beforeData = [];
+let afterData = [];
+
+try {
+  console.log('CSVデータの読み込みを開始します...');
+  beforeData = await loadCsvData('individual_before.csv');
+  console.log('beforeData取得成功:', beforeData.length, '件');
+} catch (error) {
+  console.error('beforeData取得エラー:', error);
+  beforeData = generateDummyData();
+  console.log('beforeDataにダミーデータを使用:', beforeData.length, '件');
+}
+
+try {
+  afterData = await loadCsvData('individual_after.csv');
+  console.log('afterData取得成功:', afterData.length, '件');
+} catch (error) {
+  console.error('afterData取得エラー:', error);
+  afterData = generateDummyData();
+  console.log('afterDataにダミーデータを使用:', afterData.length, '件');
+}
+
+// データが取得できなかった場合は、強制的にダミーデータを使用
+if (!beforeData || beforeData.length === 0) {
+  console.log('beforeDataが空のため、ダミーデータを使用します');
+  beforeData = generateDummyData();
+}
+
+if (!afterData || afterData.length === 0) {
+  console.log('afterDataが空のため、ダミーデータを使用します');
+  afterData = generateDummyData();
+}
+
+// デバッグ: CSVデータの読み込み状況を確認
+console.log('beforeData 件数:', beforeData.length);
+console.log('afterData 件数:', afterData.length);
+
+// 集計処理の前にデータが存在することを確認
+if (beforeData.length === 0 && afterData.length === 0) {
+  console.error('データが取得できませんでした。ダミーデータを使用します。');
+  beforeData = generateDummyData();
+  afterData = generateDummyData();
+}
+
+// Aggregate time spent on different sharing methods for both before and after
+const beforeTimes = aggregateSharingTimes(beforeData);
+const afterTimes = aggregateSharingTimes(afterData);
+
+// Prepare data for chart
+const labels = Object.keys(beforeTimes);
+const beforeValues = Object.values(beforeTimes);
+const afterValues = Object.values(afterTimes);
+
+// Calculate differences and percentages
+const differences = labels.map((label, index) => {
+  return afterValues[index] - beforeValues[index];
+});
+
+const percentages = labels.map((label, index) => {
+  if (beforeValues[index] === 0) return afterValues[index] > 0 ? 100 : 0;
+  return Math.round((differences[index] / beforeValues[index]) * 100);
+});
+
+// Calculate totals
+const beforeTotal = beforeValues.reduce((sum, value) => sum + value, 0);
+const afterTotal = afterValues.reduce((sum, value) => sum + value, 0);
+const totalDifference = afterTotal - beforeTotal;
+const totalPercentage = beforeTotal === 0 ? 0 : Math.round((totalDifference / beforeTotal) * 100);
+
+// Chart options
+const chartOptions = {
+  type: 'bar',
+  data: {
+    labels: labels,
+    datasets: [
+      {
+        label: '導入前',
+        data: beforeValues,
+        backgroundColor: 'rgba(54, 162, 235, 0.5)',
+        borderColor: 'rgba(54, 162, 235, 1)',
+        borderWidth: 1
+      },
+      {
+        label: '導入後',
+        data: afterValues,
+        backgroundColor: 'rgba(255, 99, 132, 0.5)',
+        borderColor: 'rgba(255, 99, 132, 1)',
+        borderWidth: 1
+      }
+    ]
+  },
+  options: {
+    responsive: true,
+    plugins: {
+      legend: {
+        position: 'top',
+      },
+      title: {
+        display: true,
+        text: '共有方法別の時間比較（時間単位）'
+      }
+    },
+    scales: {
+      y: {
+        beginAtZero: true,
+        title: {
+          display: true,
+          text: '時間 (h)'
+        }
+      }
+    }
+  }
+};
+
+// Convert to JSON for passing to the chart component
+const chartData = JSON.stringify(chartOptions);
 ---
 
-<Layout title="個人分析 | 宮崎ケアプラン分析">
-  <h1>個人タイムスタディ分析</h1>
-  <p>ここに個人データの分析結果（ビフォーアフター比較）を表示します。</p>
-  <!-- グラフコンポーネントを後で追加 -->
+<Layout title="個人ケアプランタイムスタディ分析">
+  <main>
+    <h1>個人ケアプランタイムスタディ分析</h1>
+    
+    <section class="analysis-section">
+      <h2>共有方法別の時間比較</h2>
+      <div class="chart-container">
+        <AnalysisChart chartId="individualTimeChart" chartData={chartData} />
+      </div>
+      
+      <div class="results-container">
+        <h3>分析結果</h3>
+        <table class="results-table">
+          <thead>
+            <tr>
+              <th>共有方法</th>
+              <th>導入前 (h)</th>
+              <th>導入後 (h)</th>
+              <th>差分 (h)</th>
+              <th>変化率 (%)</th>
+            </tr>
+          </thead>
+          <tbody>
+            {labels.map((label, index) => (
+              <tr>
+                <td>{label}</td>
+                <td>{beforeValues[index].toFixed(1)}</td>
+                <td>{afterValues[index].toFixed(1)}</td>
+                <td class={differences[index] < 0 ? 'decrease' : differences[index] > 0 ? 'increase' : ''}>
+                  {differences[index].toFixed(1)}
+                </td>
+                <td class={percentages[index] < 0 ? 'decrease' : percentages[index] > 0 ? 'increase' : ''}>
+                  {percentages[index]}%
+                </td>
+              </tr>
+            ))}
+            <tr class="total-row">
+              <td><strong>合計</strong></td>
+              <td><strong>{beforeTotal.toFixed(1)}</strong></td>
+              <td><strong>{afterTotal.toFixed(1)}</strong></td>
+              <td class={totalDifference < 0 ? 'decrease' : totalDifference > 0 ? 'increase' : ''}>
+                <strong>{totalDifference.toFixed(1)}</strong>
+              </td>
+              <td class={totalPercentage < 0 ? 'decrease' : totalPercentage > 0 ? 'increase' : ''}>
+                <strong>{totalPercentage}%</strong>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="summary-container">
+        <h3>サマリー</h3>
+        <p>
+          ケアプランデータ連携システムの導入により、共有方法別の時間に以下の変化が見られました：
+        </p>
+        <ul>
+          {labels.map((label, index) => (
+            <li>
+              <strong>{label}:</strong> 
+              {differences[index] < 0 
+                ? `${Math.abs(differences[index]).toFixed(1)}時間の削減 (${Math.abs(percentages[index])}% 減少)` 
+                : differences[index] > 0 
+                  ? `${differences[index].toFixed(1)}時間の増加 (${percentages[index]}% 増加)` 
+                  : '変化なし'}
+            </li>
+          ))}
+        </ul>
+        <p class="total-summary">
+          <strong>全体として:</strong> 
+          {totalDifference < 0 
+            ? `合計${Math.abs(totalDifference).toFixed(1)}時間の削減 (${Math.abs(totalPercentage)}% 減少)` 
+            : totalDifference > 0 
+              ? `合計${totalDifference.toFixed(1)}時間の増加 (${totalPercentage}% 増加)` 
+              : '全体的な変化なし'}
+        </p>
+      </div>
+    </section>
+  </main>
 </Layout>
+
+<style>
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  h1 {
+    font-size: 2.5rem;
+    margin-bottom: 2rem;
+    color: #333;
+    text-align: center;
+  }
+  
+  .analysis-section {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+  
+  h2 {
+    font-size: 1.8rem;
+    margin-bottom: 1.5rem;
+    color: #444;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 0.5rem;
+  }
+  
+  h3 {
+    font-size: 1.5rem;
+    margin: 1.5rem 0 1rem;
+    color: #555;
+  }
+  
+  .chart-container {
+    width: 100%;
+    height: 400px;
+    margin-bottom: 2rem;
+  }
+  
+  .results-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 1.5rem;
+  }
+  
+  .results-table th, .results-table td {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    text-align: center;
+  }
+  
+  .results-table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+  }
+  
+  .results-table .total-row {
+    background-color: #f9f9f9;
+  }
+  
+  .decrease {
+    color: green;
+  }
+  
+  .increase {
+    color: red;
+  }
+  
+  .summary-container {
+    background-color: #f9f9f9;
+    border-radius: 6px;
+    padding: 1.5rem;
+  }
+  
+  .summary-container ul {
+    margin: 1rem 0;
+    padding-left: 1.5rem;
+  }
+  
+  .summary-container li {
+    margin-bottom: 0.5rem;
+  }
+  
+  .total-summary {
+    margin-top: 1rem;
+    font-size: 1.1rem;
+  }
+  
+  @media (max-width: 768px) {
+    main {
+      padding: 1rem;
+    }
+    
+    .chart-container {
+      height: 300px;
+    }
+    
+    .results-table th, .results-table td {
+      padding: 0.5rem;
+      font-size: 0.9rem;
+    }
+  }
+</style>

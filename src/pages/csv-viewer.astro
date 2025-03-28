@@ -1,0 +1,434 @@
+---
+import Layout from '../layouts/Layout.astro';
+import { getFullCsvInfo } from '../data/csvData.js';
+
+// CSVファイルのパス
+const csvFiles = [
+  { name: '個人導入前', path: 'individual_before.csv' },
+  { name: '個人導入後', path: 'individual_after.csv' },
+  { name: '事業所導入前', path: 'business_before.csv' },
+  { name: '事業所導入後', path: 'business_after.csv' }
+];
+
+// 各CSVファイルの情報を取得
+const csvInfos = await Promise.all(
+  csvFiles.map(async (file) => {
+    try {
+      const info = await getFullCsvInfo(file.path);
+      return {
+        name: file.name,
+        path: file.path,
+        info
+      };
+    } catch (error) {
+      console.error(`${file.path}の読み込みエラー:`, error);
+      return {
+        name: file.name,
+        path: file.path,
+        info: {
+          stats: { totalRows: 0, validRows: 0, headers: [], headerCount: 0, errors: [error.message] },
+          headerStats: {},
+          data: [],
+          rawHeaders: []
+        }
+      };
+    }
+  })
+);
+---
+
+<Layout title="CSVデータビューア | 宮崎ケアプラン分析">
+  <main>
+    <h1>CSVデータビューア</h1>
+    <p class="description">
+      CSVファイルのヘッダー情報とデータセット内容を表示します。
+      各CSVファイルの全てのヘッダー情報とデータの統計情報を確認できます。
+    </p>
+
+    <div class="file-selector">
+      <h2>CSVファイル一覧</h2>
+      <div class="file-buttons">
+        {csvFiles.map((file, index) => (
+          <button class="file-button" data-target={`file-${index}`}>
+            {file.name} ({file.path})
+          </button>
+        ))}
+      </div>
+    </div>
+
+    {csvInfos.map((csvInfo, fileIndex) => (
+      <div id={`file-${fileIndex}`} class="csv-info-container" style={fileIndex === 0 ? "" : "display: none;"}>
+        <h2>{csvInfo.name} ({csvInfo.path})</h2>
+        
+        <div class="stats-card">
+          <h3>基本情報</h3>
+          <table class="stats-table">
+            <tr>
+              <th>総行数</th>
+              <td>{csvInfo.info.stats.totalRows}</td>
+            </tr>
+            <tr>
+              <th>有効行数</th>
+              <td>{csvInfo.info.stats.validRows}</td>
+            </tr>
+            <tr>
+              <th>ヘッダー数</th>
+              <td>{csvInfo.info.stats.headerCount}</td>
+            </tr>
+            <tr>
+              <th>エラー</th>
+              <td>{csvInfo.info.stats.errors.length > 0 ? csvInfo.info.stats.errors.join(', ') : 'なし'}</td>
+            </tr>
+          </table>
+        </div>
+
+        <div class="headers-section">
+          <h3>ヘッダー情報</h3>
+          <p>全{csvInfo.info.stats.headerCount}件のヘッダーがあります</p>
+          
+          <div class="headers-list">
+            {csvInfo.info.rawHeaders.map((header, index) => (
+              <div class="header-item">
+                <h4 class="header-name">{header}</h4>
+                {csvInfo.info.headerStats[header] && (
+                  <div class="header-stats">
+                    <table class="header-stats-table">
+                      <tr>
+                        <th>値の数</th>
+                        <td>{csvInfo.info.headerStats[header].valueCount}</td>
+                      </tr>
+                      <tr>
+                        <th>ユニーク値</th>
+                        <td>{csvInfo.info.headerStats[header].uniqueValues}</td>
+                      </tr>
+                      {csvInfo.info.headerStats[header].hasNumericValues && (
+                        <>
+                          <tr>
+                            <th>最小値</th>
+                            <td>{csvInfo.info.headerStats[header].min}</td>
+                          </tr>
+                          <tr>
+                            <th>最大値</th>
+                            <td>{csvInfo.info.headerStats[header].max}</td>
+                          </tr>
+                          <tr>
+                            <th>平均値</th>
+                            <td>{csvInfo.info.headerStats[header].avg?.toFixed(2)}</td>
+                          </tr>
+                        </>
+                      )}
+                      <tr>
+                        <th>サンプル値</th>
+                        <td>
+                          {csvInfo.info.headerStats[header].examples.map((example, i) => (
+                            <span class="example-value">
+                              {String(example).substring(0, 50)}{String(example).length > 50 ? '...' : ''}
+                              {i < csvInfo.info.headerStats[header].examples.length - 1 ? ', ' : ''}
+                            </span>
+                          ))}
+                        </td>
+                      </tr>
+                    </table>
+                  </div>
+                )}
+              </div>
+            ))}
+          </div>
+        </div>
+
+        <div class="data-preview">
+          <h3>データプレビュー</h3>
+          <p>最初の10行のデータを表示しています</p>
+          
+          {csvInfo.info.data.length > 0 ? (
+            <div class="table-container">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>#</th>
+                    {csvInfo.info.rawHeaders.map(header => (
+                      <th>{header}</th>
+                    ))}
+                  </tr>
+                </thead>
+                <tbody>
+                  {csvInfo.info.data.slice(0, 10).map((row, rowIndex) => (
+                    <tr>
+                      <td class="row-number">{rowIndex + 1}</td>
+                      {csvInfo.info.rawHeaders.map(header => (
+                        <td>
+                          {row[header] !== null && row[header] !== undefined 
+                            ? String(row[header]).substring(0, 50) + (String(row[header]).length > 50 ? '...' : '') 
+                            : '-'}
+                        </td>
+                      ))}
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <p class="no-data">データがありません</p>
+          )}
+        </div>
+      </div>
+    ))}
+  </main>
+</Layout>
+
+<script>
+  // ファイル選択ボタンの動作
+  document.addEventListener('DOMContentLoaded', () => {
+    const fileButtons = document.querySelectorAll('.file-button');
+    const fileContainers = document.querySelectorAll('.csv-info-container');
+    
+    fileButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        const targetId = button.getAttribute('data-target');
+        
+        // 全てのコンテナを非表示にする
+        fileContainers.forEach(container => {
+          container.style.display = 'none';
+        });
+        
+        // 選択されたコンテナを表示する
+        document.getElementById(targetId).style.display = 'block';
+        
+        // アクティブなボタンのスタイルを更新
+        fileButtons.forEach(btn => {
+          btn.classList.remove('active');
+        });
+        button.classList.add('active');
+      });
+    });
+    
+    // 最初のボタンをアクティブにする
+    if (fileButtons.length > 0) {
+      fileButtons[0].classList.add('active');
+    }
+  });
+</script>
+
+<style>
+  main {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 2rem;
+  }
+  
+  h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: #333;
+    text-align: center;
+  }
+  
+  .description {
+    text-align: center;
+    margin-bottom: 2rem;
+    color: #666;
+    font-size: 1.1rem;
+  }
+  
+  h2 {
+    font-size: 1.8rem;
+    margin: 2rem 0 1rem;
+    color: #444;
+    border-bottom: 2px solid #eee;
+    padding-bottom: 0.5rem;
+  }
+  
+  h3 {
+    font-size: 1.5rem;
+    margin: 1.5rem 0 1rem;
+    color: #555;
+  }
+  
+  h4 {
+    font-size: 1.2rem;
+    margin: 1rem 0 0.5rem;
+    color: #666;
+  }
+  
+  .file-selector {
+    margin-bottom: 2rem;
+    background-color: #f9f9f9;
+    padding: 1.5rem;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+  
+  .file-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    margin-top: 1rem;
+  }
+  
+  .file-button {
+    padding: 0.75rem 1.5rem;
+    background-color: #f0f0f0;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 1rem;
+    transition: all 0.2s ease;
+  }
+  
+  .file-button:hover {
+    background-color: #e0e0e0;
+  }
+  
+  .file-button.active {
+    background-color: #4a89dc;
+    color: white;
+    border-color: #3a79cc;
+  }
+  
+  .csv-info-container {
+    background-color: #fff;
+    border-radius: 8px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    margin-bottom: 2rem;
+  }
+  
+  .stats-card {
+    background-color: #f9f9f9;
+    border-radius: 6px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+  }
+  
+  .stats-table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+  
+  .stats-table th, .stats-table td {
+    padding: 0.75rem;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+  }
+  
+  .stats-table th {
+    width: 30%;
+    color: #666;
+  }
+  
+  .headers-section {
+    margin-bottom: 2rem;
+  }
+  
+  .headers-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+  
+  .header-item {
+    background-color: #f9f9f9;
+    border-radius: 6px;
+    padding: 1rem;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+  }
+  
+  .header-name {
+    color: #4a89dc;
+    margin: 0 0 0.5rem 0;
+    padding-bottom: 0.5rem;
+    border-bottom: 1px solid #eee;
+    word-break: break-all;
+  }
+  
+  .header-stats-table {
+    width: 100%;
+    font-size: 0.9rem;
+  }
+  
+  .header-stats-table th, .header-stats-table td {
+    padding: 0.4rem;
+    border-bottom: 1px solid #eee;
+    text-align: left;
+  }
+  
+  .header-stats-table th {
+    width: 40%;
+    color: #777;
+  }
+  
+  .example-value {
+    display: inline-block;
+    background-color: #f0f0f0;
+    padding: 0.2rem 0.4rem;
+    border-radius: 3px;
+    margin: 0.1rem;
+    font-size: 0.85rem;
+    word-break: break-all;
+  }
+  
+  .data-preview {
+    margin-top: 2rem;
+  }
+  
+  .table-container {
+    overflow-x: auto;
+    margin-top: 1rem;
+  }
+  
+  .data-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  
+  .data-table th, .data-table td {
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    text-align: left;
+  }
+  
+  .data-table th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+    position: sticky;
+    top: 0;
+  }
+  
+  .data-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+  
+  .row-number {
+    font-weight: bold;
+    background-color: #f0f0f0;
+  }
+  
+  .no-data {
+    padding: 2rem;
+    text-align: center;
+    color: #999;
+    font-style: italic;
+    background-color: #f9f9f9;
+    border-radius: 6px;
+  }
+  
+  @media (max-width: 768px) {
+    main {
+      padding: 1rem;
+    }
+    
+    .headers-list {
+      grid-template-columns: 1fr;
+    }
+    
+    .file-buttons {
+      flex-direction: column;
+    }
+    
+    .file-button {
+      width: 100%;
+    }
+  }
+</style>
