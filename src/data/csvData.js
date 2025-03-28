@@ -30,150 +30,75 @@ const isBuildTime = import.meta.env.SSR;
  * @returns {Promise<Array>} - CSVデータの配列
  */
 export async function loadCsvData(fileName) {
-  console.log(`CSVファイル読み込み開始: ${fileName}`);
+  console.log(`CSVファイルの読み込みを開始します: ${fileName}`);
   
-  // サーバーサイドビルドでは実際のCSVファイルは存在しないため、ダミーデータを生成
-  if (typeof window === 'undefined') {
-    console.log(`ビルド時のため、${fileName}のダミーデータを生成します`);
-    // データタイプを判定
-    let dataType = '';
-    if (fileName.includes('individual') && fileName.includes('before')) {
-      dataType = 'individual_before';
-    } else if (fileName.includes('individual') && fileName.includes('after')) {
-      dataType = 'individual_after';
-    } else if (fileName.includes('business') && fileName.includes('before')) {
-      dataType = 'business_before';
-    } else if (fileName.includes('business') && fileName.includes('after')) {
-      dataType = 'business_after';
+  // 複数のパスを試す
+  const possiblePaths = [
+    `/data/${fileName}`,
+    `/miyazaki-careplan-timestudy-analysis/data/${fileName}`,
+    `/public/data/${fileName}`,
+    `./data/${fileName}`,
+    `../data/${fileName}`,
+    `../../data/${fileName}`,
+    `../public/data/${fileName}`
+  ];
+  
+  // 各パスを順番に試す
+  for (const path of possiblePaths) {
+    try {
+      console.log(`パス ${path} からCSVファイルの読み込みを試みます...`);
+      const response = await fetch(path);
+      
+      if (response.ok) {
+        const csvText = await response.text();
+        console.log(`パス ${path} からCSVファイルの読み込みに成功しました`);
+        return csvText;
+      } else {
+        console.warn(`パス ${path} からのCSVファイル読み込みに失敗しました: ${response.status} ${response.statusText}`);
+      }
+    } catch (error) {
+      console.warn(`パス ${path} からのCSVファイル読み込み中にエラーが発生しました:`, error);
     }
-    
-    // CSVファイル情報からサンプル行数を取得
-    let rows = 100; // デフォルト
-    if (csvFileInfo[fileName]) {
-      rows = csvFileInfo[fileName].totalRows;
-    }
-    
-    return generateDummyData(dataType, rows);
   }
   
-  try {
-    // ベースURLを取得（末尾のスラッシュを確認）
-    const baseUrl = import.meta.env.BASE_URL || '/';
-    const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
-    
-    // 異なるパスでの試行を行う
-    const paths = [
-      `${normalizedBaseUrl}data/${fileName}`,
-      `/data/${fileName}`,
-      `./data/${fileName}`,
-      `/miyazaki-careplan-timestudy-analysis/data/${fileName}`,
-      `../public/data/${fileName}`,
-      `../../public/data/${fileName}`
-    ];
-    
-    let csvText = null;
-    let fetchError = null;
-    
-    // 各パスを試行
-    for (const path of paths) {
-      try {
-        console.log(`CSVファイル取得を試行: ${path}`);
-        const response = await fetch(path);
-        if (!response.ok) {
-          console.warn(`ステータス ${response.status}: ${path}`);
-          continue;
-        }
-        csvText = await response.text();
-        console.log(`CSVファイル取得成功: ${path}`);
-        console.log(`CSV長さ: ${csvText.length}`);
-        break;
-      } catch (e) {
-        console.warn(`CSVファイル取得エラー: ${path}`, e);
-        fetchError = e;
-      }
-    }
-    
-    // すべてのパスで失敗した場合
-    if (!csvText) {
-      console.error(`全てのパスでCSVファイルの取得に失敗しました: ${fetchError?.message || 'エラー不明'}`);
-      console.error('ダミーデータを生成します');
-      // データタイプを判定
-      let dataType = '';
-      if (fileName.includes('individual') && fileName.includes('before')) {
-        dataType = 'individual_before';
-      } else if (fileName.includes('individual') && fileName.includes('after')) {
-        dataType = 'individual_after';
-      } else if (fileName.includes('business') && fileName.includes('before')) {
-        dataType = 'business_before';
-      } else if (fileName.includes('business') && fileName.includes('after')) {
-        dataType = 'business_after';
-      }
-      
-      // CSVファイル情報からサンプル行数を取得
-      let rows = 100; // デフォルト
-      if (csvFileInfo[fileName]) {
-        rows = csvFileInfo[fileName].totalRows;
-      }
-      
-      return generateDummyData(dataType, rows);
-    }
-    
-    // CSVデータのパース
-    const parsedData = Papa.parse(csvText, {
-      header: true,
-      skipEmptyLines: true
-    });
-    
-    // ヘッダーとデータの抽出
-    const headers = parsedData.meta.fields;
-    let data = parsedData.data;
-    
-    // 空行や無効なデータ行を除外
-    data = data.filter(row => {
-      // オブジェクトのすべての値が空文字列または未定義でないかチェック
-      return Object.values(row).some(value => value !== "" && value !== undefined);
-    });
-    
-    console.log(`パースされたデータ行数: ${data.length}`);
-    console.log(`フィルタリング後の有効な行数: ${data.length}`);
-    
-    // ヘッダーを正規化（改行や空白を削除）
-    const normalizedHeaders = headers.map(header => 
-      header.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim()
-    );
-    
-    // 正規化されたヘッダーを使用して新しいデータオブジェクトを作成
-    const normalizedData = data.map(row => {
-      const newRow = {};
-      headers.forEach((header, index) => {
-        newRow[normalizedHeaders[index]] = row[header];
-      });
-      return newRow;
-    });
-    
-    return normalizedData;
-  } catch (error) {
-    console.error(`CSVファイル読み込みエラー: ${error.message}`);
-    console.error('エラー発生: ダミーデータを生成します');
-    // データタイプを判定
-    let dataType = '';
-    if (fileName.includes('individual') && fileName.includes('before')) {
-      dataType = 'individual_before';
-    } else if (fileName.includes('individual') && fileName.includes('after')) {
-      dataType = 'individual_after';
-    } else if (fileName.includes('business') && fileName.includes('before')) {
-      dataType = 'business_before';
-    } else if (fileName.includes('business') && fileName.includes('after')) {
-      dataType = 'business_after';
-    }
-    
-    // CSVファイル情報からサンプル行数を取得
-    let rows = 100; // デフォルト
-    if (csvFileInfo[fileName]) {
-      rows = csvFileInfo[fileName].totalRows;
-    }
-    
-    return generateDummyData(dataType, rows);
+  // すべてのパスが失敗した場合はダミーデータを生成
+  console.error(`すべてのパスからのCSVファイル読み込みに失敗しました: ${fileName}`);
+  return generateDummyCsvText(fileName);
+}
+
+// ダミーCSVデータを生成する関数
+function generateDummyCsvText(fileName) {
+  console.log(`ダミーCSVデータの生成を開始します: ${fileName}`);
+  
+  if (fileName.includes('individual_before')) {
+    return `担当者ID,担当者名,ケアプラン共有方法,1ヶ月あたりの提供票作成時間（分）,1ヶ月あたりの実績確認時間（分）,利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）
+user1,担当者1,FAX,120,90,60
+user2,担当者2,FAX,110,85,55
+user3,担当者3,メール,100,80,50
+user4,担当者4,FAX,115,88,58
+user5,担当者5,メール,105,82,52`;
+  } else if (fileName.includes('individual_after')) {
+    return `担当者ID,担当者名,ケアプラン共有方法,1ヶ月あたりの提供票作成時間（分）,1ヶ月あたりの実績確認時間（分）,利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）
+user1,担当者1,システム,60,45,30
+user2,担当者2,システム,55,40,25
+user3,担当者3,システム,50,35,20
+user4,担当者4,システム,58,42,28
+user5,担当者5,システム,52,38,22`;
+  } else if (fileName.includes('business_before')) {
+    return `事業所ID,事業所名,事業所規模,1ヶ月あたりの提供票作成時間（分）,1ヶ月あたりの実績確認時間（分）
+business1,事業所1,小規模,1200,900
+business2,事業所2,中規模,1500,1200
+business3,事業所3,大規模,1800,1500`;
+  } else if (fileName.includes('business_after')) {
+    return `事業所ID,事業所名,事業所規模,1ヶ月あたりの提供票作成時間（分）,1ヶ月あたりの実績確認時間（分）
+business1,事業所1,小規模,600,450
+business2,事業所2,中規模,750,600
+business3,事業所3,大規模,900,750`;
+  } else {
+    console.warn(`未知のCSVファイル名: ${fileName}、汎用ダミーデータを生成します`);
+    return `項目1,項目2,項目3
+値1,値2,値3
+値4,値5,値6`;
   }
 }
 

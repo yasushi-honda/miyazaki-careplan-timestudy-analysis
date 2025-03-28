@@ -43,196 +43,474 @@ const remainingMinutes = annualMinutesSaved;
   <main>
     <section class="hero">
       <div class="container">
-        <h1>宮崎県ケアプランデータ連携システム導入支援<br>タイムスタディ分析</h1>
-        <p class="lead">
-          ケアプランデータ連携システム導入前後のタイムスタディ調査結果を分析し、<br>
-          業務効率化の効果を可視化しています。
-        </p>
+        <h1>宮崎県ケアプランデータ連携システム導入効果分析</h1>
+        <p class="lead">ケアプランデータ連携システムの導入による業務効率化の効果を分析しました</p>
       </div>
     </section>
 
-    <section class="key-findings card">
-      <h2>主要な分析結果</h2>
-      <div class="stats-grid">
-        <div class="stat-card">
-          <div class="stat-value" id="totalTimeSaved">{totalTimeSavedPerMonth}分/月</div>
-          <div class="stat-label">総業務時間削減</div>
-          <div class="stat-description">1人あたりの月間削減時間</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="efficiencyRate">{efficiencyRate}%</div>
-          <div class="stat-label">業務効率化</div>
-          <div class="stat-description">月間業務時間の削減率</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value" id="annualTimeSaved">{annualHoursSaved}時間{remainingMinutes}分</div>
-          <div class="stat-label">年間削減時間</div>
-          <div class="stat-description">1人あたりの年間削減時間</div>
-        </div>
+    <div class="tab-container">
+      <div class="tabs">
+        <button class="tab-button active" data-tab="overview">概要</button>
+        <button class="tab-button" data-tab="individual">個人分析</button>
+        <button class="tab-button" data-tab="business">事業所分析</button>
       </div>
-    </section>
 
-    <section class="analysis-options card">
-      <h2>分析オプション</h2>
-      <div class="options-grid">
-        <div class="option-card">
-          <h3>個人レベル分析</h3>
-          <p>個人レベルでの業務効率化の効果を詳細に分析します。</p>
+      <div class="tab-content">
+        <!-- 概要タブ -->
+        <div id="overview" class="tab-pane active">
+          <section class="stats-section">
+            <h2>統計情報</h2>
+            <div class="stats-container">
+              <div class="stat-card">
+                <h3>平均時間短縮</h3>
+                <p><span id="avg-time-reduction">計算中...</span></p>
+              </div>
+              <div class="stat-card">
+                <h3>効率化率</h3>
+                <p><span id="efficiency-rate">計算中...</span></p>
+              </div>
+              <div class="stat-card">
+                <h3>年間削減時間</h3>
+                <p><span id="annual-time-saved">計算中...</span></p>
+              </div>
+            </div>
+          </section>
+          
+          <div class="chart-container">
+            <h2>グラフ分析</h2>
+            <div class="loading-indicator" id="chart-loading">データを読み込み中...</div>
+            <div class="chart-grid" id="chart-grid" style="display: none;">
+              <div class="chart-card">
+                <h3>業務時間比較</h3>
+                <div class="chart-wrapper">
+                  <canvas id="overviewTimeChart"></canvas>
+                </div>
+              </div>
+              <div class="chart-card">
+                <h3>業務効率化率</h3>
+                <div class="chart-wrapper">
+                  <canvas id="overviewEfficiencyChart"></canvas>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="option-card">
-          <h3>事業所レベル分析</h3>
-          <p>事業所全体での導入効果と経済的メリットを分析します。</p>
-        </div>
-        <div class="option-card">
-          <h3>CSVデータ閲覧</h3>
-          <p>元のCSVデータを閲覧・確認できます。</p>
-        </div>
-      </div>
-    </section>
 
-    <section class="summary-section">
-      <h2>サマリー</h2>
-      <div class="summary-stats">
-        <div class="stat-card">
-          <div class="stat-value">{totalTimeSavedPerMonth}分/月</div>
-          <div class="stat-label">総業務時間削減</div>
-          <div class="stat-description">1人あたりの月間削減時間</div>
+        <!-- 個人分析タブ -->
+        <div class="tab-pane" id="individual">
+          <h2>個人レベルでの導入効果分析</h2>
+          <p class="tab-description">ケアマネージャー個人レベルでの業務効率化の効果を分析しています</p>
+          <div id="individual-content" class="loading">
+            <p class="loading-message">個人分析データを読み込み中...</p>
+          </div>
         </div>
-        <div class="stat-card">
-          <div class="stat-value">{efficiencyRate}%</div>
-          <div class="stat-label">業務効率化</div>
-          <div class="stat-description">月間業務時間の削減率</div>
-        </div>
-        <div class="stat-card">
-          <div class="stat-value">{annualHoursSaved}時間{remainingMinutes}分</div>
-          <div class="stat-label">年間削減時間</div>
-          <div class="stat-description">1人あたりの年間削減時間</div>
-        </div>
-      </div>
-    </section>
 
-    <section class="benefits-grid">
-      <h2>メリット</h2>
-      <div class="benefit-card">
-        <h3>業務効率化</h3>
-        <p>ケアプランデータ連携システムの導入により、業務時間が削減され、業務効率が向上します。</p>
-      </div>
-      <div class="benefit-card">
-        <h3>経済的メリット</h3>
-        <p>業務時間の削減により、人件費が削減され、経済的メリットが得られます。</p>
-      </div>
-      <div class="benefit-card">
-        <h3>データの可視化</h3>
-        <p>ケアプランデータを可視化することで、業務の状況を把握しやすくなります。</p>
-      </div>
-    </section>
-
-    <section class="data-section">
-      <h2>データ</h2>
-      <div class="data-content">
-        <div class="data-text">
-          <p>ケアプランデータ連携システムの導入により、業務時間が削減され、業務効率が向上します。</p>
-        </div>
-        <div class="data-visual">
-          <div class="data-chart">
-            <div class="chart-bar chart-before" style="height: {beforeAvgCreationTime}px;"></div>
-            <div class="chart-bar chart-after" style="height: {afterAvgCreationTime}px;"></div>
-            <div class="chart-label">1ヶ月あたりの提供票作成時間（分）</div>
-            <div class="chart-title">提供票作成時間の変化</div>
+        <!-- 事業所分析タブ -->
+        <div class="tab-pane" id="business">
+          <h2>事業所レベルでの導入効果分析</h2>
+          <p class="tab-description">介護事業所全体での業務効率化の効果を分析しています</p>
+          <div id="business-content" class="loading">
+            <p class="loading-message">事業所分析データを読み込み中...</p>
           </div>
         </div>
       </div>
-    </section>
-
-    <section class="statistics-section">
-      <h2>分析結果</h2>
-      <div class="statistics-grid">
-        <div class="statistic-card">
-          <h3>総業務時間削減</h3>
-          <p class="statistic-value" id="total-time-saved">{totalTimeSavedPerMonth}分/月</p>
-        </div>
-        <div class="statistic-card">
-          <h3>業務効率化</h3>
-          <p class="statistic-value" id="efficiency-rate">{efficiencyRate}%</p>
-        </div>
-        <div class="statistic-card">
-          <h3>年間削減時間</h3>
-          <p class="statistic-value" id="annual-time-saved">{annualHoursSaved}時間{remainingMinutes}分</p>
-        </div>
-      </div>
-    </section>
-
-    <section class="report-section">
-      <h2>詳細レポート</h2>
-      <div class="report-container">
-        <div class="report-card">
-          <h3>導入前後の業務時間比較</h3>
-          <div class="report-content">
-            <p>本レポートは宮崎県内の介護事業所におけるケアプランデータ連携システム導入前後の業務時間を比較したものです。</p>
-            <p>調査期間: 2024年1月〜2024年3月</p>
-            <p>対象事業所: 宮崎県内の介護事業所 20社</p>
-          </div>
-        </div>
-      </div>
-    </section>
-
+    </div>
   </main>
 </Layout>
 
 <script>
-  // クライアントサイドでCSVデータが読み込まれた後に統計情報を更新する関数
-  window.updateStatistics = function() {
-    console.log('統計情報の更新を開始します...');
+  // ページ読み込み時に実行
+  document.addEventListener('DOMContentLoaded', async function() {
+    console.log('ページが読み込まれました。データ初期化を開始します...');
+    
+    // タブ切り替え機能の初期化
+    initTabs(); // まずタブUIを初期化
+    
+    try {
+      // ローディング表示開始
+      showLoadingState(true, 'データを読み込み中...');
+      
+      // CSVデータを非同期で全て読み込む
+      console.log('CSVデータの並列読み込みを開始します...');
+      const [individualBeforeData, individualAfterData, businessBeforeData, businessAfterData] = await Promise.all([
+        getCsvData('individual_before.csv'),
+        getCsvData('individual_after.csv'),
+        getCsvData('business_before.csv'),
+        getCsvData('business_after.csv')
+      ]);
+      
+      console.log('CSVデータの読み込み試行完了');
+      
+      // いずれかのデータ取得に失敗した場合 (getCsvDataがnullを返す)
+      if (!individualBeforeData || !individualAfterData || !businessBeforeData || !businessAfterData) {
+          // nullを返したファイル名を取得（デバッグ用）
+          const failedFiles = [
+              !individualBeforeData && 'individual_before.csv',
+              !individualAfterData && 'individual_after.csv',
+              !businessBeforeData && 'business_before.csv',
+              !businessAfterData && 'business_after.csv'
+          ].filter(Boolean).join(', ');
+        throw new Error(`必要なCSVデータの読み込みに失敗しました: ${failedFiles}`);
+      }
+      
+      console.log('全てのCSVデータの読み込み成功。キャッシュに保存します。');
+      // データをキャッシュに保存
+      window.__csvDataCache = {
+        'individual_before.csv': individualBeforeData,
+        'individual_after.csv': individualAfterData,
+        'business_before.csv': businessBeforeData,
+        'business_after.csv': businessAfterData
+      };
+      
+      // 統計情報を更新
+      console.log('統計情報の更新を開始します。');
+      updateStatistics();
+      
+      // グラフを描画
+      console.log('概要グラフの描画を開始します。');
+      renderOverviewCharts();
+      
+      // 各分析タブのコンテンツを初期表示
+      console.log('個別分析・事業所分析タブの初期表示を開始します。');
+      loadIndividualContent();
+      loadBusinessContent();
+      
+      // 全て成功したらローディング解除
+      showLoadingState(false);
+      console.log('ページの初期化が正常に完了しました。');
+
+    } catch (error) {
+      console.error('データ読み込みまたは初期化処理中にエラーが発生しました:', error);
+      showErrorState(`初期化エラー: ${error.message}`);
+      
+      // エラー発生時、ダミーデータでの再試行 (オプション)
+      console.warn('エラー発生のため、ダミーデータでの処理を試みます...');
+      try {
+        window.__csvDataCache = {
+          'individual_before.csv': getDummyData('individual_before'),
+          'individual_after.csv': getDummyData('individual_after'),
+          'business_before.csv': getDummyData('business_before'),
+          'business_after.csv': getDummyData('business_after')
+        };
+        updateStatistics();
+        renderOverviewCharts();
+        loadIndividualContent();
+        loadBusinessContent();
+        // ダミーデータ処理後もエラー表示は残すが、ローディングは消す
+        showLoadingState(false, '', true); // keepError=true
+         console.log('ダミーデータでの初期化処理が完了しました。');
+      } catch (dummyError) {
+        console.error('ダミーデータでの処理中にもエラーが発生しました:', dummyError);
+        // 最終的なエラー表示を維持 (showErrorStateは既に呼ばれている)
+      }
+    }
+  });
+
+  // タブ初期化関数 (堅牢化)
+  function initTabs() {
+    const tabButtons = document.querySelectorAll('.tab-button');
+    const tabPanes = document.querySelectorAll('.tab-pane');
+    
+    if (!tabButtons.length || !tabPanes.length) {
+        console.warn('タブ切り替えに必要な要素が見つかりません。');
+        return;
+    }
+
+    tabButtons.forEach(button => {
+      button.addEventListener('click', () => {
+        // 他のボタンのアクティブ状態を解除
+        tabButtons.forEach(btn => btn.classList.remove('active'));
+        // クリックされたボタンをアクティブに
+        button.classList.add('active');
+        
+        // 他のタブコンテンツを非表示
+        tabPanes.forEach(pane => pane.classList.remove('active'));
+        
+        // 対応するタブコンテンツを表示
+        const tabId = button.getAttribute('data-tab');
+        const targetPane = document.getElementById(tabId);
+        if (targetPane) {
+          targetPane.classList.add('active');
+          console.log(`タブを切り替えました: ${tabId}`);
+          // 概要タブが再度アクティブになった時にグラフを再描画（必要に応じて）
+          // if (tabId === 'overview') {
+          //   renderOverviewCharts(); // データが更新される可能性がある場合に有効
+          // }
+        } else {
+          console.error(`ID'${tabId}'のタブコンテンツが見つかりません！`);
+        }
+      });
+    });
+
+    // 初期表示タブの設定 ('overview'をデフォルトに)
+    const initialTabId = 'overview';
+    const initialTabButton = document.querySelector(`.tab-button[data-tab="${initialTabId}"]`);
+    const initialTabPane = document.getElementById(initialTabId);
+
+    // 全てのタブを一旦非アクティブに
+    tabButtons.forEach(btn => btn.classList.remove('active'));
+    tabPanes.forEach(pane => pane.classList.remove('active'));
+
+    if (initialTabButton && initialTabPane) {
+        initialTabButton.classList.add('active');
+        initialTabPane.classList.add('active');
+        console.log(`初期タブ '${initialTabId}' をアクティブにしました。`);
+    } else {
+        console.error(`初期タブ ('${initialTabId}') の要素が見つからないため、正しく表示されません。HTMLを確認してください。`);
+        // フォールバックとして最初のタブをアクティブにする (もし存在すれば)
+        if(tabButtons.length > 0 && tabPanes.length > 0) {
+            tabButtons[0].classList.add('active');
+            const firstTabId = tabButtons[0].getAttribute('data-tab');
+            const firstPane = document.getElementById(firstTabId);
+            if (firstPane) firstPane.classList.add('active');
+            console.warn('フォールバックとして最初のタブをアクティブにしました。');
+        }
+    }
+  }
+
+  // ローディング/エラー状態管理関数
+  function showLoadingState(isLoading, message = '読み込み中...', keepError = false) {
+      const loadingIndicator = document.getElementById('chart-loading');
+      const chartGrid = document.getElementById('chart-grid');
+      
+      if (!loadingIndicator || !chartGrid) {
+          console.warn('ローディング表示またはグラフグリッド要素が見つかりません。');
+          return;
+      }
+
+      if (isLoading) {
+          loadingIndicator.textContent = message;
+          loadingIndicator.style.display = 'block';
+          // エラー表示が残っている場合、通常の色に戻す
+          if (!keepError) {
+              loadingIndicator.style.color = ''; // デフォルトの色に戻す
+          }
+          chartGrid.style.display = 'none';
+      } else {
+          // ローディング解除時、エラー表示を維持しない場合のみ非表示にする
+          if (!keepError) {
+              loadingIndicator.style.display = 'none';
+          }
+          // エラーでなければグラフグリッドを表示
+          if (loadingIndicator.style.color !== 'red') {
+             chartGrid.style.display = 'grid';
+          }
+      }
+  }
+
+  // エラー状態専用表示関数
+  function showErrorState(errorMessage) {
+      const loadingIndicator = document.getElementById('chart-loading');
+      const chartGrid = document.getElementById('chart-grid');
+      
+       if (!loadingIndicator || !chartGrid) {
+          console.warn('エラー表示に必要な要素が見つかりません。');
+          return;
+      }
+
+      loadingIndicator.textContent = errorMessage;
+      loadingIndicator.style.color = 'red'; // エラーであることが分かるように赤文字に
+      loadingIndicator.style.display = 'block';
+      chartGrid.style.display = 'none'; // エラー時はグラフを非表示
+  }
+
+  // CSVデータを取得する関数
+  async function getCsvData(fileName) {
+    console.log(`CSVデータの取得を開始: ${fileName}`);
+    
+    // ブラウザ環境でのみ実行
+    if (typeof window === 'undefined') {
+      console.warn(`サーバーサイド実行が検出されました (${fileName})。ダミーデータを返します。`);
+      // サーバーサイドでは適切なダミーデータを返す（もし定義されていれば）
+      return typeof getDummyData === 'function' ? getDummyData(fileName.replace('.csv', '')) : null;
+    }
+    
+    try {
+      // fetch APIでCSVファイルを取得 (キャッシュ無効化パラメータを追加)
+      const response = await fetch(`/data/${fileName}?v=${Date.now()}`); 
+      
+      // レスポンスステータスを確認
+      if (!response.ok) {
+        throw new Error(`ファイル取得失敗 (${fileName}): ステータス ${response.status} ${response.statusText}`);
+      }
+      
+      // レスポンスボディをテキストとして取得
+      const csvText = await response.text();
+      
+      // テキストが空でないか確認
+      if (!csvText || csvText.trim() === '') {
+        console.warn(`ファイル (${fileName}) が空または内容がありません。空のデータとして扱います。`);
+        return []; // 空の配列を返す
+      }
+      
+      // PapaParseライブラリの存在を確認
+      if (typeof Papa === 'undefined') {
+        throw new Error('CSVパーサーライブラリ(PapaParse)が見つかりません。');
+      }
+      
+      // parseCSV関数でパースを実行
+      const parsedData = parseCSV(csvText, fileName); // ファイル名を渡してエラー時の情報を増やす
+      
+      // パース結果をログに出力
+      console.log(`CSVパース完了: ${fileName}, 行数: ${parsedData?.length ?? 'N/A'}`);
+      return parsedData;
+
+    } catch (error) {
+      // エラー発生時の処理
+      console.error(`CSV (${fileName}) の取得またはパース中にエラーが発生しました:`, error);
+      // 呼び出し元でエラーをハンドリングできるよう null を返す
+      return null; 
+    }
+  }
+  
+  // CSVをパースする関数 (PapaParse設定とエラーハンドリング強化)
+  function parseCSV(csvText, fileName = 'unknown') { // デバッグ用にファイル名を受け取る
+    if (!csvText || typeof csvText !== 'string') {
+      console.error(`(${fileName}) 無効なCSVテキストが parseCSV に渡されました。`);
+      return []; // 空配列を返す
+    }
+    
+    try {
+      console.log(`(${fileName}) PapaParseによるパースを開始します...`);
+      const result = Papa.parse(csvText.trim(), { // BOMや前後の空白を除去
+        header: true,             // 1行目をヘッダーとして解釈
+        skipEmptyLines: 'greedy', // 空行および空白のみの行をスキップ
+        dynamicTyping: true,      // 数値や真偽値を自動で型変換
+        transformHeader: header => // ヘッダー文字列を正規化
+          header.replace(/[\r\n]+/g, ' ') // 改行をスペースに
+                .replace(/\s{2,}/g, ' ')   // 連続する空白を1つに
+                .trim(),                // 前後の空白を除去
+        complete: function(results) {
+            console.log(`(${fileName}) PapaParse パース完了。データ行数: ${results.data.length}, エラー数: ${results.errors.length}`);
+        },
+        error: function(error, file) {
+            console.error(`(${fileName}) PapaParse パースエラー:`, error);
+        }
+      });
+
+      // パース中に発生したエラーを警告としてログに出力
+      if (result.errors.length > 0) {
+          console.warn(`(${fileName}) CSVパース中に以下のエラー/警告が発生しました:`);
+          result.errors.forEach(err => console.warn(`- ${err.message} (行: ${err.row})`));
+          // エラーがあっても、処理できたデータは返すことがあるため続行
+      }
+      
+      // パース結果のデータ配列が存在し、配列であることを確認
+      if (!result || !Array.isArray(result.data)) {
+          console.error(`(${fileName}) PapaParseの結果が無効です。`);
+          return [];
+      }
+
+      // ヘッダーが正しく取得できているか確認 (任意)
+      if (!result.meta || !result.meta.fields || result.meta.fields.length === 0) {
+          console.warn(`(${fileName}) CSVヘッダーが検出されませんでした。データが正しくない可能性があります。`);
+      }
+      
+      // result.data がパースされたデータの配列
+      return result.data;
+
+    } catch (error) {
+      // Papa.parse自体が例外をスローした場合
+      console.error(`(${fileName}) 致命的なCSVパースエラーが発生しました:`, error);
+      return []; // エラー時は空配列を返す
+    }
+  }
+  
+  // ダミーデータを取得する関数
+  function getDummyData(type) {
+    if (type === 'individual_before') {
+      return [
+        {
+          "ケアプラン共有方法": "FAX",
+          "1ヶ月あたりの提供票作成時間（分）": "120",
+          "1ヶ月あたりの実績確認時間（分）": "90",
+          "利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）": "60"
+        },
+        {
+          "ケアプラン共有方法": "FAX",
+          "1ヶ月あたりの提供票作成時間（分）": "110",
+          "1ヶ月あたりの実績確認時間（分）": "85",
+          "利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）": "55"
+        }
+      ];
+    } else if (type === 'individual_after') {
+      return [
+        {
+          "ケアプラン共有方法": "システム",
+          "1ヶ月あたりの提供票作成時間（分）": "60",
+          "1ヶ月あたりの実績確認時間（分）": "45",
+          "利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）": "30"
+        },
+        {
+          "ケアプラン共有方法": "システム",
+          "1ヶ月あたりの提供票作成時間（分）": "55",
+          "1ヶ月あたりの実績確認時間（分）": "40",
+          "利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）": "25"
+        }
+      ];
+    } else if (type === 'business_before') {
+      return [
+        {
+          "事業所ID": "1",
+          "事業所名": "介護事業所A",
+          "1ヶ月あたりの提供票作成時間（分）": "480",
+          "1ヶ月あたりの実績確認時間（分）": "360"
+        },
+        {
+          "事業所ID": "2",
+          "事業所名": "介護事業所B",
+          "1ヶ月あたりの提供票作成時間（分）": "520",
+          "1ヶ月あたりの実績確認時間（分）": "390"
+        }
+      ];
+    } else if (type === 'business_after') {
+      return [
+        {
+          "事業所ID": "1",
+          "事業所名": "介護事業所A",
+          "1ヶ月あたりの提供票作成時間（分）": "240",
+          "1ヶ月あたりの実績確認時間（分）": "180"
+        },
+        {
+          "事業所ID": "2",
+          "事業所名": "介護事業所B",
+          "1ヶ月あたりの提供票作成時間（分）": "260",
+          "1ヶ月あたりの実績確認時間（分）": "195"
+        }
+      ];
+    }
+    return [];
+  }
+  
+  // 個人分析タブのコンテンツを読み込む関数
+  function loadIndividualContent() {
+    const individualContent = document.getElementById('individual-content');
+    if (!individualContent) return;
     
     // CSVデータが読み込まれているか確認
     if (!window.__csvDataCache) {
-      console.log('CSVデータがまだ読み込まれていません');
-      return;
+      window.__csvDataCache = {};
     }
     
-    // CSVファイル名を変数に格納
-    const individualBeforeFile = 'individual_before.csv';
-    const individualAfterFile = 'individual_after.csv';
-    const businessBeforeFile = 'business_before.csv';
-    const businessAfterFile = 'business_after.csv';
+    // 個人データを取得（キャッシュになければダミーデータを使用）
+    const individualBeforeData = window.__csvDataCache['individual_before.csv'] || getDummyData('individual_before');
+    const individualAfterData = window.__csvDataCache['individual_after.csv'] || getDummyData('individual_after');
     
-    // データを取得
-    const individualBeforeData = window.__csvDataCache[individualBeforeFile];
-    const individualAfterData = window.__csvDataCache[individualAfterFile];
-    const businessBeforeData = window.__csvDataCache[businessBeforeFile];
-    const businessAfterData = window.__csvDataCache[businessAfterFile];
+    // データをキャッシュに保存
+    window.__csvDataCache['individual_before.csv'] = individualBeforeData;
+    window.__csvDataCache['individual_after.csv'] = individualAfterData;
     
-    // すべてのCSVファイルが読み込まれているか確認
-    if (!individualBeforeData || !individualAfterData || !businessBeforeData || !businessAfterData) {
-      console.log('一部のCSVデータがまだ読み込まれていません');
-      console.log('読み込み状況:', {
-        '導入前個人データ': !!individualBeforeData,
-        '導入後個人データ': !!individualAfterData,
-        '導入前事業所データ': !!businessBeforeData,
-        '導入後事業所データ': !!businessAfterData
-      });
-      
-      // エラーメッセージを非表示にする
-      const statusMessages = document.querySelectorAll('.statusMessage');
-      if (statusMessages) {
-        statusMessages.forEach(element => {
-          element.style.display = 'none';
-        });
-      }
-      
-      // 5秒後に再試行
-      setTimeout(window.updateStatistics, 5000);
-      return;
-    }
+    // ローディング表示を削除
+    individualContent.classList.remove('loading');
     
-    // 主要な統計データを計算する関数
+    // 平均時間を計算する関数
     const calculateAverageTime = (data, key) => {
       if (!data || data.length === 0) return 0;
       const sum = data.reduce((acc, row) => acc + (parseInt(row[key]) || 0), 0);
       return Math.round(sum / data.length);
     };
     
-    // 統計データを計算
+    // 各指標の平均時間を計算
     const beforeAvgCreationTime = calculateAverageTime(individualBeforeData, '1ヶ月あたりの提供票作成時間（分）');
     const afterAvgCreationTime = calculateAverageTime(individualAfterData, '1ヶ月あたりの提供票作成時間（分）');
     const beforeAvgConfirmationTime = calculateAverageTime(individualBeforeData, '1ヶ月あたりの実績確認時間（分）');
@@ -241,387 +519,1606 @@ const remainingMinutes = annualMinutesSaved;
     const afterAvgModificationTime = calculateAverageTime(individualAfterData, '利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）');
     
     // 削減時間の計算
-    const totalTimeSavedPerMonth = (beforeAvgCreationTime - afterAvgCreationTime) + 
-                                  (beforeAvgConfirmationTime - afterAvgConfirmationTime) + 
-                                  (beforeAvgModificationTime - afterAvgModificationTime);
+    const creationTimeReduction = beforeAvgCreationTime - afterAvgCreationTime;
+    const creationTimeReductionPercent = beforeAvgCreationTime > 0 ? Math.round((creationTimeReduction / beforeAvgCreationTime) * 100) : 0;
     
-    // 削減率の計算
-    const totalBeforeTime = beforeAvgCreationTime + beforeAvgConfirmationTime + beforeAvgModificationTime;
-    const efficiencyRate = totalBeforeTime > 0 ? Math.round((totalTimeSavedPerMonth / totalBeforeTime) * 100) : 0;
+    const confirmationTimeReduction = beforeAvgConfirmationTime - afterAvgConfirmationTime;
+    const confirmationTimeReductionPercent = beforeAvgConfirmationTime > 0 ? Math.round((confirmationTimeReduction / beforeAvgConfirmationTime) * 100) : 0;
     
-    // 年間削減時間の計算
-    const annualTimeSavedMinutes = totalTimeSavedPerMonth * 12;
-    const annualHoursSaved = Math.floor(annualTimeSavedMinutes / 60);
-    const remainingMinutes = annualTimeSavedMinutes % 60;
+    const modificationTimeReduction = beforeAvgModificationTime - afterAvgModificationTime;
+    const modificationTimeReductionPercent = beforeAvgModificationTime > 0 ? Math.round((modificationTimeReduction / beforeAvgModificationTime) * 100) : 0;
     
-    console.log('計算結果:', {
-      '導入前提供票作成時間': beforeAvgCreationTime,
-      '導入後提供票作成時間': afterAvgCreationTime,
-      '導入前実績確認時間': beforeAvgConfirmationTime,
-      '導入後実績確認時間': afterAvgConfirmationTime,
-      '導入前修正時間': beforeAvgModificationTime,
-      '導入後修正時間': afterAvgModificationTime,
-      '月間削減時間': totalTimeSavedPerMonth,
-      '効率化率': efficiencyRate,
-      '年間削減時間（時間）': annualHoursSaved,
-      '年間削減時間（残り分）': remainingMinutes
-    });
+    // 個人分析のHTMLを生成
+    const html = `
+      <div class="analysis-content">
+        <div class="analysis-grid">
+          <div class="analysis-card">
+            <h3>提供票作成時間</h3>
+            <div class="comparison">
+              <div class="before">
+                <span class="label">導入前</span>
+                <span class="value">${beforeAvgCreationTime}分</span>
+              </div>
+              <div class="arrow">→</div>
+              <div class="after">
+                <span class="label">導入後</span>
+                <span class="value">${afterAvgCreationTime}分</span>
+              </div>
+              <div class="reduction">
+                <span class="value">-${creationTimeReduction}分</span>
+                <span class="percent">(-${creationTimeReductionPercent}%)</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="analysis-card">
+            <h3>実績確認時間</h3>
+            <div class="comparison">
+              <div class="before">
+                <span class="label">導入前</span>
+                <span class="value">${beforeAvgConfirmationTime}分</span>
+              </div>
+              <div class="arrow">→</div>
+              <div class="after">
+                <span class="label">導入後</span>
+                <span class="value">${afterAvgConfirmationTime}分</span>
+              </div>
+              <div class="reduction">
+                <span class="value">-${confirmationTimeReduction}分</span>
+                <span class="percent">(-${confirmationTimeReductionPercent}%)</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="analysis-card">
+            <h3>修正完了時間</h3>
+            <div class="comparison">
+              <div class="before">
+                <span class="label">導入前</span>
+                <span class="value">${beforeAvgModificationTime}分</span>
+              </div>
+              <div class="arrow">→</div>
+              <div class="after">
+                <span class="label">導入後</span>
+                <span class="value">${afterAvgModificationTime}分</span>
+              </div>
+              <div class="reduction">
+                <span class="value">-${modificationTimeReduction}分</span>
+                <span class="percent">(-${modificationTimeReductionPercent}%)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="chart-grid">
+          <div class="chart-card">
+            <h3>業務時間比較</h3>
+            <div class="chart-wrapper">
+              <canvas id="individualTimeChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <h3>効率化率</h3>
+            <div class="chart-wrapper">
+              <canvas id="individualEfficiencyChart"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
     
-    // DOM要素を更新する関数
-    const updateElement = (id, value) => {
-      const element = document.getElementById(id);
-      if (element) {
-        element.textContent = value;
-        console.log(`${id}を${value}に更新しました`);
-      } else {
-        console.warn(`${id}要素が見つかりません`);
-      }
+    // HTMLを挿入
+    individualContent.innerHTML = html;
+    
+    // グラフを描画
+    renderIndividualTimeChart(
+      'individualTimeChart', 
+      ['提供票作成', '実績確認', '修正完了'],
+      [beforeAvgCreationTime, beforeAvgConfirmationTime, beforeAvgModificationTime],
+      [afterAvgCreationTime, afterAvgConfirmationTime, afterAvgModificationTime]
+    );
+    
+    renderIndividualEfficiencyChart(
+      'individualEfficiencyChart',
+      ['提供票作成', '実績確認', '修正完了'],
+      [creationTimeReductionPercent, confirmationTimeReductionPercent, modificationTimeReductionPercent]
+    );
+  }
+  
+  // 事業所分析タブのコンテンツを読み込む関数
+  function loadBusinessContent() {
+    const businessContent = document.getElementById('business-content');
+    if (!businessContent) return;
+    
+    // CSVデータが読み込まれているか確認
+    if (!window.__csvDataCache) {
+      window.__csvDataCache = {};
+    }
+    
+    // 事業所データを取得（キャッシュになければダミーデータを使用）
+    const businessBeforeData = window.__csvDataCache['business_before.csv'] || getDummyData('business_before');
+    const businessAfterData = window.__csvDataCache['business_after.csv'] || getDummyData('business_after');
+    
+    // データをキャッシュに保存
+    window.__csvDataCache['business_before.csv'] = businessBeforeData;
+    window.__csvDataCache['business_after.csv'] = businessAfterData;
+    
+    // ローディング表示を削除
+    businessContent.classList.remove('loading');
+    
+    // 平均時間を計算する関数
+    const calculateAverageTime = (data, key) => {
+      if (!data || data.length === 0) return 0;
+      const sum = data.reduce((acc, row) => acc + (parseInt(row[key]) || 0), 0);
+      return Math.round(sum / data.length);
     };
     
-    // 統計情報の更新
-    updateElement('total-time-saved', `${totalTimeSavedPerMonth}分/月`);
-    updateElement('efficiency-rate', `${efficiencyRate}%`);
-    updateElement('annual-time-saved', `${annualHoursSaved}時間${remainingMinutes}分`);
+    // 各指標の平均時間を計算
+    const beforeAvgCreationTime = calculateAverageTime(businessBeforeData, '1ヶ月あたりの提供票作成時間（分）');
+    const afterAvgCreationTime = calculateAverageTime(businessAfterData, '1ヶ月あたりの提供票作成時間（分）');
+    const beforeAvgConfirmationTime = calculateAverageTime(businessBeforeData, '1ヶ月あたりの実績確認時間（分）');
+    const afterAvgConfirmationTime = calculateAverageTime(businessAfterData, '1ヶ月あたりの実績確認時間（分）');
     
-    // 既存の統計表示も更新（存在する場合）
-    updateElement('totalTimeSaved', `${totalTimeSavedPerMonth}分/月`);
-    updateElement('efficiencyRate', `${efficiencyRate}%`);
-    updateElement('annualTimeSaved', `${annualHoursSaved}時間${remainingMinutes}分`);
+    // 削減時間の計算
+    const creationTimeReduction = beforeAvgCreationTime - afterAvgCreationTime;
+    const creationTimeReductionPercent = beforeAvgCreationTime > 0 ? Math.round((creationTimeReduction / beforeAvgCreationTime) * 100) : 0;
     
-    console.log('統計情報の更新が完了しました');
-  };
-  
-  // ページ読み込み時にCSVデータを取得
-  document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOMContentLoadedイベント発生: CSVデータの読み込みを開始します');
+    const confirmationTimeReduction = beforeAvgConfirmationTime - afterAvgConfirmationTime;
+    const confirmationTimeReductionPercent = beforeAvgConfirmationTime > 0 ? Math.round((confirmationTimeReduction / beforeAvgConfirmationTime) * 100) : 0;
     
-    // エラーメッセージを非表示にする
-    const statusMessages = document.querySelectorAll('.statusMessage');
-    if (statusMessages) {
-      statusMessages.forEach(element => {
-        element.style.display = 'none';
-      });
-    }
+    // 総合的な時間削減効果（月間）
+    const totalMonthlyTimeSaved = creationTimeReduction + confirmationTimeReduction;
+    const totalBeforeTime = beforeAvgCreationTime + beforeAvgConfirmationTime;
+    const totalEfficiencyRate = totalBeforeTime > 0 ? Math.round((totalMonthlyTimeSaved / totalBeforeTime) * 100) : 0;
     
-    // CSVデータが読み込まれたときのイベントリスナー
-    window.addEventListener('csv-data-loaded', function(event) {
-      console.log('CSVデータ読み込みイベント検知:', event.detail.fileName);
-      
-      // すべてのCSVファイルが読み込まれたかチェック
-      const requiredFiles = [
-        'individual_before.csv',
-        'individual_after.csv',
-        'business_before.csv',
-        'business_after.csv'
-      ];
-      
-      // 必要なファイルが全て読み込まれているか確認
-      const allFilesLoaded = requiredFiles.every(file => 
-        window.__csvDataCache && window.__csvDataCache[file]
-      );
-      
-      // 統計情報を更新
-      window.updateStatistics();
-      
-      // すべてのファイルが読み込まれたらコンソールに表示
-      if (allFilesLoaded) {
-        console.log('すべてのCSVファイルが読み込まれました');
-      }
+    // 年間削減時間の計算
+    const annualHoursSaved = Math.floor((totalMonthlyTimeSaved * 12) / 60);
+    const annualMinutesSaved = (totalMonthlyTimeSaved * 12) % 60;
+    
+    // 事業所数の計算
+    const businessCount = businessBeforeData ? businessBeforeData.length : 0;
+    
+    // 全事業所の年間削減時間
+    const totalAnnualTimeSaved = totalMonthlyTimeSaved * 12 * businessCount;
+    const totalAnnualHoursSaved = Math.floor(totalAnnualTimeSaved / 60);
+    const totalAnnualMinutesSaved = totalAnnualTimeSaved % 60;
+    
+    // 事業所別のデータを準備
+    const businessNames = businessBeforeData.map(item => item['事業所名'] || '不明');
+    const beforeTimes = businessBeforeData.map(item => 
+      parseInt(item['1ヶ月あたりの提供票作成時間（分）'] || 0) + 
+      parseInt(item['1ヶ月あたりの実績確認時間（分）'] || 0)
+    );
+    const afterTimes = businessAfterData.map((item, index) => {
+      const businessId = businessBeforeData[index]['事業所ID'];
+      const matchingItem = businessAfterData.find(a => a['事業所ID'] === businessId) || item;
+      return parseInt(matchingItem['1ヶ月あたりの提供票作成時間（分）'] || 0) + 
+             parseInt(matchingItem['1ヶ月あたりの実績確認時間（分）'] || 0);
     });
     
-    // 各CSVファイルを読み込む
-    if (typeof getCsvData === 'function') {
-      try {
-        getCsvData('individual_before.csv');
-        getCsvData('individual_after.csv');
-        getCsvData('business_before.csv');
-        getCsvData('business_after.csv');
-      } catch (error) {
-        console.error('CSVデータの読み込み中にエラーが発生しました:', error);
+    // 事業所分析のHTMLを生成
+    const html = `
+      <div class="analysis-content">
+        <div class="summary-card">
+          <h3>事業所全体の効果</h3>
+          <div class="summary-stats">
+            <div class="summary-stat">
+              <span class="label">対象事業所数</span>
+              <span class="value">${businessCount}事業所</span>
+            </div>
+            <div class="summary-stat">
+              <span class="label">月間削減時間</span>
+              <span class="value">${totalMonthlyTimeSaved}分/月</span>
+            </div>
+            <div class="summary-stat">
+              <span class="label">効率化率</span>
+              <span class="value">${totalEfficiencyRate}%</span>
+            </div>
+            <div class="summary-stat">
+              <span class="label">年間削減時間</span>
+              <span class="value">${annualHoursSaved}時間${annualMinutesSaved}分</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="chart-grid">
+          <div class="chart-card">
+            <h3>事業所別 業務時間比較</h3>
+            <div class="chart-wrapper">
+              <canvas id="businessComparisonChart"></canvas>
+            </div>
+          </div>
+          <div class="chart-card">
+            <h3>効率化率</h3>
+            <div class="chart-wrapper">
+              <canvas id="businessEfficiencyChart"></canvas>
+            </div>
+          </div>
+        </div>
+        
+        <div class="analysis-grid">
+          <div class="analysis-card">
+            <h3>提供票作成時間（事業所平均）</h3>
+            <div class="comparison">
+              <div class="before">
+                <span class="label">導入前</span>
+                <span class="value">${beforeAvgCreationTime}分/月</span>
+              </div>
+              <div class="arrow">→</div>
+              <div class="after">
+                <span class="label">導入後</span>
+                <span class="value">${afterAvgCreationTime}分/月</span>
+              </div>
+              <div class="reduction">
+                <span class="value">-${creationTimeReduction}分</span>
+                <span class="percent">(-${creationTimeReductionPercent}%)</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="analysis-card">
+            <h3>実績確認時間（事業所平均）</h3>
+            <div class="comparison">
+              <div class="before">
+                <span class="label">導入前</span>
+                <span class="value">${beforeAvgConfirmationTime}分/月</span>
+              </div>
+              <div class="arrow">→</div>
+              <div class="after">
+                <span class="label">導入後</span>
+                <span class="value">${afterAvgConfirmationTime}分/月</span>
+              </div>
+              <div class="reduction">
+                <span class="value">-${confirmationTimeReduction}分</span>
+                <span class="percent">(-${confirmationTimeReductionPercent}%)</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="summary-card">
+          <h3>全事業所の年間削減効果</h3>
+          <div class="summary-stats">
+            <div class="summary-stat">
+              <span class="label">年間総削減時間</span>
+              <span class="value">${totalAnnualHoursSaved}時間${totalAnnualMinutesSaved}分</span>
+            </div>
+            <div class="summary-stat">
+              <span class="label">1事業所あたり</span>
+              <span class="value">${annualHoursSaved}時間${annualMinutesSaved}分/年</span>
+            </div>
+          </div>
+        </div>
+        
+        <div class="chart-container">
+          <h3>事業所別 導入効果比較</h3>
+          <div class="business-chart">
+            <div class="business-chart-header">
+              <div class="business-chart-column">事業所</div>
+              <div class="business-chart-column">導入前</div>
+              <div class="business-chart-column">導入後</div>
+              <div class="business-chart-column">削減率</div>
+            </div>
+            <div class="business-chart-body">
+              ${generateBusinessRows(businessBeforeData, businessAfterData)}
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    
+    // HTMLを挿入
+    businessContent.innerHTML = html;
+    
+    // グラフを描画
+    renderBusinessComparisonChart('businessComparisonChart', businessNames, beforeTimes, afterTimes);
+    
+    // 効率化率グラフの描画
+    const efficiencyRates = beforeTimes.map((before, index) => {
+      const after = afterTimes[index];
+      return before > 0 ? Math.round(((before - after) / before) * 100) : 0;
+    });
+    
+    renderBusinessEfficiencyChart('businessEfficiencyChart', businessNames, efficiencyRates);
+  }
+  
+  // グラフを描画する関数
+  function renderIndividualTimeChart(canvasId, labels, beforeData, afterData) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    if (!ctx) {
+      console.error(`キャンバス要素が見つかりません: ${canvasId}`);
+      return;
+    }
+    
+    try {
+      // Chart.jsが読み込まれているか確認
+      if (typeof Chart === 'undefined') {
+        console.error('Chart.jsが読み込まれていません。');
+        // Chart.jsを動的に読み込む
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+        script.onload = () => {
+          console.log('Chart.jsが読み込まれました。グラフを描画します。');
+          renderIndividualTimeChart(canvasId, labels, beforeData, afterData);
+        };
+        document.head.appendChild(script);
+        return;
       }
+      
+      // 既存のチャートを破棄
+      Chart.getChart(canvasId)?.destroy();
+      
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [
+            {
+              label: '導入前',
+              data: beforeData,
+              backgroundColor: 'rgba(54, 162, 235, 0.7)',
+              borderColor: 'rgba(54, 162, 235, 1)',
+              borderWidth: 1
+            },
+            {
+              label: '導入後',
+              data: afterData,
+              backgroundColor: 'rgba(75, 192, 192, 0.7)',
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 1
+            }
+          ]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: '時間（分）'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `${context.dataset.label}: ${context.raw}分`;
+                }
+              }
+            }
+          }
+        }
+      });
+      
+      console.log(`グラフ描画成功: ${canvasId}`);
+    } catch (error) {
+      console.error(`グラフ描画中にエラーが発生しました: ${canvasId}`, error);
+    }
+  }
+  
+  function renderIndividualEfficiencyChart(canvasId, labels, data) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    if (!ctx) {
+      console.error(`キャンバス要素が見つかりません: ${canvasId}`);
+      return;
+    }
+    
+    try {
+      // Chart.jsが読み込まれているか確認
+      if (typeof Chart === 'undefined') {
+        console.error('Chart.jsが読み込まれていません。');
+        // Chart.jsを動的に読み込む
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+        script.onload = () => {
+          console.log('Chart.jsが読み込まれました。グラフを描画します。');
+          renderIndividualEfficiencyChart(canvasId, labels, data);
+        };
+        document.head.appendChild(script);
+        return;
+      }
+      
+      // 既存のチャートを破棄
+      Chart.getChart(canvasId)?.destroy();
+      
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '効率化率',
+            data: data,
+            backgroundColor: 'rgba(75, 192, 192, 0.7)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: '効率化率（%）'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `効率化率: ${context.raw}%`;
+                }
+              }
+            }
+          }
+        }
+      });
+      
+      console.log(`グラフ描画成功: ${canvasId}`);
+    } catch (error) {
+      console.error(`グラフ描画中にエラーが発生しました: ${canvasId}`, error);
+    }
+  }
+  
+  function renderBusinessTimeChart(canvasId, labels, beforeData, afterData) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    if (!ctx) {
+      console.error(`キャンバス要素が見つかりません: ${canvasId}`);
+      return;
+    }
+    
+    try {
+      // Chart.jsが読み込まれているか確認
+      if (typeof Chart === 'undefined') {
+        console.error('Chart.jsが読み込まれていません。');
+        // Chart.jsを動的に読み込む
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+        script.onload = () => {
+          console.log('Chart.jsが読み込まれました。グラフを描画します。');
+          renderBusinessTimeChart(canvasId, labels, beforeData, afterData);
+        };
+        document.head.appendChild(script);
+        return;
+      }
+      
+      // 既存のチャートを破棄
+      Chart.getChart(canvasId)?.destroy();
+      
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '導入前',
+            data: beforeData,
+            backgroundColor: 'rgba(54, 162, 235, 0.7)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+          }, {
+            label: '導入後',
+            data: afterData,
+            backgroundColor: 'rgba(75, 192, 192, 0.7)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: '時間（分）'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `${context.dataset.label}: ${context.raw}分`;
+                }
+              }
+            }
+          }
+        }
+      });
+      
+      console.log(`グラフ描画成功: ${canvasId}`);
+    } catch (error) {
+      console.error(`グラフ描画中にエラーが発生しました: ${canvasId}`, error);
+    }
+  }
+  
+  function renderBusinessEfficiencyChart(canvasId, labels, data) {
+    const ctx = document.getElementById(canvasId).getContext('2d');
+    if (!ctx) {
+      console.error(`キャンバス要素が見つかりません: ${canvasId}`);
+      return;
+    }
+    
+    try {
+      // Chart.jsが読み込まれているか確認
+      if (typeof Chart === 'undefined') {
+        console.error('Chart.jsが読み込まれていません。');
+        // Chart.jsを動的に読み込む
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+        script.onload = () => {
+          console.log('Chart.jsが読み込まれました。グラフを描画します。');
+          renderBusinessEfficiencyChart(canvasId, labels, data);
+        };
+        document.head.appendChild(script);
+        return;
+      }
+      
+      // 既存のチャートを破棄
+      Chart.getChart(canvasId)?.destroy();
+      
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: labels,
+          datasets: [{
+            label: '効率化率',
+            data: data,
+            backgroundColor: 'rgba(75, 192, 192, 0.7)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: {
+                display: true,
+                text: '効率化率（%）'
+              }
+            }
+          },
+          plugins: {
+            legend: {
+              position: 'top',
+            },
+            tooltip: {
+              callbacks: {
+                label: function(context) {
+                  return `効率化率: ${context.raw}%`;
+                }
+              }
+            }
+          }
+        }
+      });
+      
+      console.log(`グラフ描画成功: ${canvasId}`);
+    } catch (error) {
+      console.error(`グラフ描画中にエラーが発生しました: ${canvasId}`, error);
+    }
+  }
+  
+  // 概要タブのグラフを描画する関数
+  function renderOverviewCharts() {
+    console.log('概要タブのグラフを描画します...');
+    
+    // ローディングインジケーターを表示
+    const loadingIndicator = document.getElementById('chart-loading');
+    const chartGrid = document.getElementById('chart-grid');
+    
+    if (loadingIndicator) {
+      loadingIndicator.style.display = 'block';
+    }
+    
+    if (chartGrid) {
+      chartGrid.style.display = 'none';
+    }
+    
+    // Chart.jsが読み込まれているか確認
+    if (typeof Chart === 'undefined') {
+      console.error('Chart.jsが読み込まれていません。動的に読み込みます。');
+      
+      // Chart.jsを動的に読み込む
+      const script = document.createElement('script');
+      script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+      script.onload = () => {
+        console.log('Chart.jsが読み込まれました。グラフを描画します。');
+        renderOverviewCharts();
+      };
+      document.head.appendChild(script);
+      return;
+    }
+    
+    try {
+      // データキャッシュの存在と必要なデータの確認
+      if (!window.__csvDataCache || 
+          !window.__csvDataCache['individual_before.csv'] || 
+          !window.__csvDataCache['individual_after.csv']) {
+        console.warn('必要なCSVデータがキャッシュにありません。');
+        
+        // ローディングインジケーターを表示したまま
+        if (loadingIndicator) {
+          loadingIndicator.textContent = 'データを読み込み中...しばらくお待ちください';
+        }
+        
+        // 1秒後に再試行
+        setTimeout(renderOverviewCharts, 1000);
+        return;
+      }
+      
+      // 個人データを取得
+      const individualBeforeData = window.__csvDataCache['individual_before.csv'];
+      const individualAfterData = window.__csvDataCache['individual_after.csv'];
+      
+      // 平均時間を計算
+      const calculateAverageTime = (data, key) => {
+        if (!data || data.length === 0) return 0;
+        const sum = data.reduce((acc, row) => {
+          const value = parseInt(row[key]) || 0;
+          return acc + value;
+        }, 0);
+        return Math.round(sum / data.length);
+      };
+      
+      // 各業務の平均時間を計算
+      const beforeAvgCreationTime = calculateAverageTime(individualBeforeData, '1ヶ月あたりの提供票作成時間（分）');
+      const afterAvgCreationTime = calculateAverageTime(individualAfterData, '1ヶ月あたりの提供票作成時間（分）');
+      const beforeAvgConfirmationTime = calculateAverageTime(individualBeforeData, '1ヶ月あたりの実績確認時間（分）');
+      const afterAvgConfirmationTime = calculateAverageTime(individualAfterData, '1ヶ月あたりの実績確認時間（分）');
+      const beforeAvgModificationTime = calculateAverageTime(individualBeforeData, '利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）');
+      const afterAvgModificationTime = calculateAverageTime(individualAfterData, '利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）');
+      
+      // 功率化率を計算
+      const calculateEfficiency = (before, after) => {
+        if (before <= 0) return 0;
+        return Math.round(((before - after) / before) * 100);
+      };
+      
+      const creationEfficiency = calculateEfficiency(beforeAvgCreationTime, afterAvgCreationTime);
+      const confirmationEfficiency = calculateEfficiency(beforeAvgConfirmationTime, afterAvgConfirmationTime);
+      const modificationEfficiency = calculateEfficiency(beforeAvgModificationTime, afterAvgModificationTime);
+      
+      console.log('計算結果:', {
+        beforeAvgCreationTime, afterAvgCreationTime, creationEfficiency,
+        beforeAvgConfirmationTime, afterAvgConfirmationTime, confirmationEfficiency,
+        beforeAvgModificationTime, afterAvgModificationTime, modificationEfficiency
+      });
+      
+      // 業務時間比較グラフ
+      const timeChartCanvas = document.getElementById('overviewTimeChart');
+      if (!timeChartCanvas) {
+        console.error('業務時間比較グラフのキャンバス要素が見つかりません。');
+      } else {
+        const ctx = timeChartCanvas.getContext('2d');
+        
+        // 既存のチャートを破棄
+        Chart.getChart('overviewTimeChart')?.destroy();
+        
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['提供票作成', '実績確認', 'ケアプラン修正'],
+            datasets: [{
+              label: '導入前',
+              data: [beforeAvgCreationTime, beforeAvgConfirmationTime, beforeAvgModificationTime],
+              backgroundColor: 'rgba(255, 99, 132, 0.7)',
+              borderColor: 'rgba(255, 99, 132, 1)',
+              borderWidth: 1
+            }, {
+              label: '導入後',
+              data: [afterAvgCreationTime, afterAvgConfirmationTime, afterAvgModificationTime],
+              backgroundColor: 'rgba(54, 162, 235, 0.7)',
+              borderColor: 'rgba(54, 162, 235, 1)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: '時間（分）'
+                }
+              }
+            },
+            plugins: {
+              legend: {
+                position: 'top',
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return `${context.dataset.label}: ${context.raw}分`;
+                  }
+                }
+              }
+            }
+          }
+        });
+        
+        console.log('業務時間比較グラフを描画しました。');
+      }
+      
+      // 功率化率グラフ
+      const efficiencyChartCanvas = document.getElementById('overviewEfficiencyChart');
+      if (!efficiencyChartCanvas) {
+        console.error('効率化率グラフのキャンバス要素が見つかりません。');
+      } else {
+        const ctx = efficiencyChartCanvas.getContext('2d');
+        
+        // 既存のチャートを破棄
+        Chart.getChart('overviewEfficiencyChart')?.destroy();
+        
+        new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: ['提供票作成', '実績確認', 'ケアプラン修正'],
+            datasets: [{
+              label: '効率化率',
+              data: [creationEfficiency, confirmationEfficiency, modificationEfficiency],
+              backgroundColor: 'rgba(75, 192, 192, 0.7)',
+              borderColor: 'rgba(75, 192, 192, 1)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+              y: {
+                beginAtZero: true,
+                title: {
+                  display: true,
+                  text: '効率化率（%）'
+                }
+              }
+            },
+            plugins: {
+              legend: {
+                position: 'top',
+              },
+              tooltip: {
+                callbacks: {
+                  label: function(context) {
+                    return `効率化率: ${context.raw}%`;
+                  }
+                }
+              }
+            }
+          }
+        });
+        
+        console.log('効率化率グラフを描画しました。');
+      }
+      
+      // ローディングインジケーターを非表示に
+      if (loadingIndicator) {
+        loadingIndicator.style.display = 'none';
+      }
+      // グラフグリッドを表示
+      if (chartGrid) {
+        chartGrid.style.display = 'grid';
+      }
+      
+      console.log('概要タブのグラフ描画が完了しました。');
+      
+    } catch (error) {
+      console.error('グラフ描画中にエラーが発生しました:', error);
+      
+      // エラー時もローディングインジケーターを非表示に
+      if (loadingIndicator) {
+        loadingIndicator.textContent = `エラーが発生しました: ${error.message}`;
+      }
+    }
+  }
+  
+  // 事業所別の行を生成する関数
+  function generateBusinessRows(beforeData, afterData) {
+    if (!beforeData || !afterData || beforeData.length === 0) {
+      return '<div class="business-chart-row"><div class="business-chart-cell" colspan="4">データがありません</div></div>';
+    }
+    
+    let rows = '';
+    
+    // 事業所ごとにデータを処理
+    beforeData.forEach((beforeItem, index) => {
+      const businessId = beforeItem['事業所ID'] || '';
+      const businessName = beforeItem['事業所名'] || `事業所${index + 1}`;
+      
+      // 対応する導入後データを探す
+      const afterItem = afterData.find(item => item['事業所ID'] === businessId) || afterData[index] || {};
+      
+      // 時間を取得
+      const beforeTime = parseInt(beforeItem['1ヶ月あたりの提供票作成時間（分）'] || 0) + parseInt(beforeItem['1ヶ月あたりの実績確認時間（分）'] || 0);
+      const afterTime = parseInt(afterItem['1ヶ月あたりの提供票作成時間（分）'] || 0) + parseInt(afterItem['1ヶ月あたりの実績確認時間（分）'] || 0);
+      
+      // 削減率を計算
+      const reductionRate = beforeTime > 0 ? Math.round(((beforeTime - afterTime) / beforeTime) * 100) : 0;
+      
+      // 行を追加
+      rows += `
+        <div class="business-chart-row">
+          <div class="business-chart-cell">${businessName}</div>
+          <div class="business-chart-cell">${beforeTime}分</div>
+          <div class="business-chart-cell">${afterTime}分</div>
+          <div class="business-chart-cell">${reductionRate}%</div>
+        </div>
+      `;
+    });
+    
+    return rows;
+  }
+  
+  // クライアントサイドで統計情報を更新する関数
+  function updateStatistics() {
+    console.log('統計情報の更新処理を開始します...');
+    
+    // データキャッシュの存在と必要なデータの確認
+    if (!window.__csvDataCache || 
+        !window.__csvDataCache['individual_before.csv'] || 
+        !window.__csvDataCache['individual_after.csv']) {
+      console.warn('必要なCSVデータがキャッシュにありません。統計更新をスキップします。');
+      
+      // 統計情報の要素を更新
+      updateElement('avg-time-reduction', 'データ読み込み中...');
+      updateElement('efficiency-rate', 'データ読み込み中...');
+      updateElement('annual-time-saved', 'データ読み込み中...');
+      
+      // 1秒後に再試行
+      setTimeout(updateStatistics, 1000);
+      return;
+    }
+    
+    try {
+      // 個人データを取得
+      const individualBeforeData = window.__csvDataCache['individual_before.csv'];
+      const individualAfterData = window.__csvDataCache['individual_after.csv'];
+      
+      // 平均時間を計算
+      const calculateAverageTime = (data, key) => {
+        if (!data || data.length === 0) return 0;
+        const sum = data.reduce((acc, row) => {
+          const value = parseInt(row[key]) || 0;
+          return acc + value;
+        }, 0);
+        return Math.round(sum / data.length);
+      };
+      
+      // 各業務の平均時間を計算
+      const beforeAvgCreationTime = calculateAverageTime(individualBeforeData, '1ヶ月あたりの提供票作成時間（分）');
+      const afterAvgCreationTime = calculateAverageTime(individualAfterData, '1ヶ月あたりの提供票作成時間（分）');
+      const beforeAvgConfirmationTime = calculateAverageTime(individualBeforeData, '1ヶ月あたりの実績確認時間（分）');
+      const afterAvgConfirmationTime = calculateAverageTime(individualAfterData, '1ヶ月あたりの実績確認時間（分）');
+      const beforeAvgModificationTime = calculateAverageTime(individualBeforeData, '利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）');
+      const afterAvgModificationTime = calculateAverageTime(individualAfterData, '利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）');
+      
+      // 削減時間の計算
+      const creationTimeSaved = beforeAvgCreationTime - afterAvgCreationTime;
+      const confirmationTimeSaved = beforeAvgConfirmationTime - afterAvgConfirmationTime;
+      const modificationTimeSaved = beforeAvgModificationTime - afterAvgModificationTime;
+      
+      const totalTimeSavedPerMonth = creationTimeSaved + confirmationTimeSaved + modificationTimeSaved;
+      
+      // 削減率の計算
+      const totalBeforeTime = beforeAvgCreationTime + beforeAvgConfirmationTime + beforeAvgModificationTime;
+      const efficiencyRate = totalBeforeTime > 0 ? Math.round((totalTimeSavedPerMonth / totalBeforeTime) * 100) : 0;
+      
+      // 年間削減時間の計算
+      const annualMinutesSaved = totalTimeSavedPerMonth * 12;
+      const annualHoursSaved = Math.floor(annualMinutesSaved / 60);
+      const remainingMinutes = annualMinutesSaved % 60;
+      
+      console.log('統計計算結果:', { 
+        beforeAvgCreationTime, afterAvgCreationTime, creationTimeSaved,
+        beforeAvgConfirmationTime, afterAvgConfirmationTime, confirmationTimeSaved,
+        beforeAvgModificationTime, afterAvgModificationTime, modificationTimeSaved,
+        totalTimeSavedPerMonth, efficiencyRate, annualHoursSaved, remainingMinutes 
+      });
+      
+      // --- DOM要素を更新 --- 
+      // 要素を安全に更新する関数
+      const updateElement = (id, value) => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.textContent = value;
+        } else {
+          console.warn(`要素が見つかりません: ${id}`);
+        }
+      };
+      
+      // 平均時間短縮
+      updateElement('avg-time-reduction', `${totalTimeSavedPerMonth}分/月`);
+      
+      // 効率化率
+      updateElement('efficiency-rate', `${efficiencyRate}%`);
+      
+      // 年間削減時間
+      updateElement('annual-time-saved', `${annualHoursSaved}時間${remainingMinutes}分/年`);
+      
+      console.log('統計情報の更新が完了しました。');
+      
+      // 概要タブのグラフを更新
+      if (typeof renderOverviewCharts === 'function') {
+        console.log('概要グラフの更新を開始します...');
+        renderOverviewCharts();
+      }
+    } catch (error) {
+      console.error('統計情報の更新中にエラーが発生しました:', error);
+      
+      // エラー時も要素を更新
+      const updateElement = (id, value) => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.textContent = value;
+        }
+      };
+      
+      updateElement('avg-time-reduction', 'エラーが発生しました');
+      updateElement('efficiency-rate', 'エラーが発生しました');
+      updateElement('annual-time-saved', 'エラーが発生しました');
+    }
+  }
+   
+   // ダミーデータを取得する関数
+  function getDummyData(type) {
+    if (type === 'individual_before') {
+      return [
+        {
+          "ケアプラン共有方法": "FAX",
+          "1ヶ月あたりの提供票作成時間（分）": "120",
+          "1ヶ月あたりの実績確認時間（分）": "90",
+          "利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）": "60"
+        },
+        {
+          "ケアプラン共有方法": "FAX",
+          "1ヶ月あたりの提供票作成時間（分）": "110",
+          "1ヶ月あたりの実績確認時間（分）": "85",
+          "利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）": "55"
+        }
+      ];
+    } else if (type === 'individual_after') {
+      return [
+        {
+          "ケアプラン共有方法": "システム",
+          "1ヶ月あたりの提供票作成時間（分）": "60",
+          "1ヶ月あたりの実績確認時間（分）": "45",
+          "利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）": "30"
+        },
+        {
+          "ケアプラン共有方法": "システム",
+          "1ヶ月あたりの提供票作成時間（分）": "55",
+          "1ヶ月あたりの実績確認時間（分）": "40",
+          "利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）": "25"
+        }
+      ];
+    } else if (type === 'business_before') {
+      return [
+        {
+          "事業所ID": "1",
+          "事業所名": "介護事業所A",
+          "1ヶ月あたりの提供票作成時間（分）": "480",
+          "1ヶ月あたりの実績確認時間（分）": "360"
+        },
+        {
+          "事業所ID": "2",
+          "事業所名": "介護事業所B",
+          "1ヶ月あたりの提供票作成時間（分）": "520",
+          "1ヶ月あたりの実績確認時間（分）": "390"
+        }
+      ];
+    } else if (type === 'business_after') {
+      return [
+        {
+          "事業所ID": "1",
+          "事業所名": "介護事業所A",
+          "1ヶ月あたりの提供票作成時間（分）": "240",
+          "1ヶ月あたりの実績確認時間（分）": "180"
+        },
+        {
+          "事業所ID": "2",
+          "事業所名": "介護事業所B",
+          "1ヶ月あたりの提供票作成時間（分）": "260",
+          "1ヶ月あたりの実績確認時間（分）": "195"
+        }
+      ];
+    }
+    return [];
+  }
+  
+  // Chart.jsの読み込みを確認し、必要に応じて読み込む関数
+  async function ensureChartJsLoaded() {
+    if (typeof Chart === 'undefined') {
+      console.log('Chart.jsを読み込みます...');
+      return new Promise((resolve, reject) => {
+        const script = document.createElement('script');
+        script.src = 'https://cdn.jsdelivr.net/npm/chart.js';
+        script.onload = () => {
+          console.log('Chart.jsの読み込みが完了しました');
+          resolve();
+        };
+        script.onerror = (error) => {
+          console.error('Chart.jsの読み込みに失敗しました:', error);
+          reject(error);
+        };
+        document.head.appendChild(script);
+      });
     } else {
-      console.error('getCsvData関数が見つかりません');
+      console.log('Chart.jsは既に読み込まれています');
+      return Promise.resolve();
+    }
+  }
+
+  // 個人タブのグラフを描画する関数
+  async function renderIndividualCharts() {
+    console.log('個人タブのグラフ描画を開始します...');
+    
+    try {
+      // Chart.jsが読み込まれていることを確認
+      await ensureChartJsLoaded();
+      
+      // データの存在確認
+      if (!window.__csvDataCache || 
+          !window.__csvDataCache['individual_before.csv'] || 
+          !window.__csvDataCache['individual_after.csv']) {
+        console.warn('個人グラフ描画: 必要なCSVデータがキャッシュにありません。');
+        
+        // エラーメッセージを表示
+        const chartContainers = document.querySelectorAll('.individual-chart-container');
+        chartContainers.forEach(container => {
+          container.innerHTML = '<div class="alert alert-warning">データ読み込み中...</div>';
+        });
+        
+        // 1秒後に再試行
+        setTimeout(renderIndividualCharts, 1000);
+        return;
+      }
+      
+      // 個人データを取得
+      const individualBeforeData = window.__csvDataCache['individual_before.csv'];
+      const individualAfterData = window.__csvDataCache['individual_after.csv'];
+      
+      // データが配列であり、空でないことを確認
+      if (!Array.isArray(individualBeforeData) || !Array.isArray(individualAfterData) ||
+          individualBeforeData.length === 0 || individualAfterData.length === 0) {
+        console.error('個人グラフ描画: データ形式が無効です。');
+        return;
+      }
+      
+      console.log('個人データサンプル:', {
+        before: individualBeforeData.slice(0, 2),
+        after: individualAfterData.slice(0, 2)
+      });
+      
+      // 既存のチャートを破棄
+      if (window.individualCharts) {
+        Object.values(window.individualCharts).forEach(chart => {
+          if (chart) chart.destroy();
+        });
+      }
+      
+      // チャートを保存するオブジェクトを初期化
+      window.individualCharts = {};
+      
+      // 提供票作成時間のグラフを描画
+      renderTimeComparisonChart(
+        'creation-time-chart',
+        '提供票作成時間（分/月）',
+        individualBeforeData,
+        individualAfterData,
+        '1ヶ月あたりの提供票作成時間（分）',
+        'individualCreationChart'
+      );
+      
+      // 実績確認時間のグラフを描画
+      renderTimeComparisonChart(
+        'confirmation-time-chart',
+        '実績確認時間（分/月）',
+        individualBeforeData,
+        individualAfterData,
+        '1ヶ月あたりの実績確認時間（分）',
+        'individualConfirmationChart'
+      );
+      
+      // 修正時間のグラフを描画
+      renderTimeComparisonChart(
+        'modification-time-chart',
+        'ケアプラン修正時間（分）',
+        individualBeforeData,
+        individualAfterData,
+        '利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）',
+        'individualModificationChart'
+      );
+      
+      console.log('個人タブのグラフ描画が完了しました');
+    } catch (error) {
+      console.error('個人タブのグラフ描画中にエラーが発生しました:', error);
+      
+      // エラーメッセージを表示
+      const chartContainers = document.querySelectorAll('.individual-chart-container');
+      chartContainers.forEach(container => {
+        container.innerHTML = '<div class="alert alert-danger">グラフ描画エラー</div>';
+      });
+    }
+  }
+  
+  // 時間比較グラフを描画する関数
+  function renderTimeComparisonChart(canvasId, title, beforeData, afterData, dataKey, chartKey) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) {
+      console.warn(`グラフ描画: キャンバス '${canvasId}' が見つかりません。`);
+      return;
     }
     
-    // 5秒後に統計情報を再度更新（非同期読み込みの完了を待つため）
-    setTimeout(() => {
-      console.log('タイムアウト後に統計情報を更新します');
-      window.updateStatistics();
-    }, 5000);
-  });
+    // データの準備
+    const calculateAverageTime = (data, key) => {
+      if (!data || data.length === 0) return 0;
+      const sum = data.reduce((acc, row) => {
+        const value = parseFloat(row[key]) || 0;
+        return acc + value;
+      }, 0);
+      return Math.round(sum / data.length);
+    };
+    
+    const beforeAvg = calculateAverageTime(beforeData, dataKey);
+    const afterAvg = calculateAverageTime(afterData, dataKey);
+    
+    // 既存のチャートを破棄
+    if (window.individualCharts && window.individualCharts[chartKey]) {
+      window.individualCharts[chartKey].destroy();
+    }
+    
+    // 新しいチャートを作成
+    const ctx = canvas.getContext('2d');
+    window.individualCharts[chartKey] = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['導入前', '導入後'],
+        datasets: [{
+          label: title,
+          data: [beforeAvg, afterAvg],
+          backgroundColor: [
+            'rgba(54, 162, 235, 0.5)',
+            'rgba(75, 192, 192, 0.5)'
+          ],
+          borderColor: [
+            'rgba(54, 162, 235, 1)',
+            'rgba(75, 192, 192, 1)'
+          ],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+          },
+          title: {
+            display: true,
+            text: title
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: '分'
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // 事業所タブのグラフを描画する関数
+  async function renderBusinessCharts() {
+    console.log('事業所タブのグラフ描画を開始します...');
+    
+    try {
+      // Chart.jsが読み込まれていることを確認
+      await ensureChartJsLoaded();
+      
+      // データの存在確認
+      if (!window.__csvDataCache || 
+          !window.__csvDataCache['business_before.csv'] || 
+          !window.__csvDataCache['business_after.csv']) {
+        console.warn('事業所グラフ描画: 必要なCSVデータがキャッシュにありません。');
+        
+        // エラーメッセージを表示
+        const chartContainers = document.querySelectorAll('.business-chart-container');
+        chartContainers.forEach(container => {
+          container.innerHTML = '<div class="alert alert-warning">データ読み込み中...</div>';
+        });
+        
+        // 1秒後に再試行
+        setTimeout(renderBusinessCharts, 1000);
+        return;
+      }
+      
+      // 事業所データを取得
+      const businessBeforeData = window.__csvDataCache['business_before.csv'];
+      const businessAfterData = window.__csvDataCache['business_after.csv'];
+      
+      // データが配列であり、空でないことを確認
+      if (!Array.isArray(businessBeforeData) || !Array.isArray(businessAfterData) ||
+          businessBeforeData.length === 0 || businessAfterData.length === 0) {
+        console.error('事業所グラフ描画: データ形式が無効です。');
+        return;
+      }
+      
+      console.log('事業所データサンプル:', {
+        before: businessBeforeData.slice(0, 2),
+        after: businessAfterData.slice(0, 2)
+      });
+      
+      // 既存のチャートを破棄
+      if (window.businessCharts) {
+        Object.values(window.businessCharts).forEach(chart => {
+          if (chart) chart.destroy();
+        });
+      }
+      
+      // チャートを保存するオブジェクトを初期化
+      window.businessCharts = {};
+      
+      // 事業所の提供票作成時間のグラフを描画
+      renderBusinessTimeComparisonChart(
+        'business-creation-time-chart',
+        '事業所全体の提供票作成時間（時間/月）',
+        businessBeforeData,
+        businessAfterData,
+        '1ヶ月あたりの提供票作成時間（分）',
+        'businessCreationChart'
+      );
+      
+      // 事業所の実績確認時間のグラフを描画
+      renderBusinessTimeComparisonChart(
+        'business-confirmation-time-chart',
+        '事業所全体の実績確認時間（時間/月）',
+        businessBeforeData,
+        businessAfterData,
+        '1ヶ月あたりの実績確認時間（分）',
+        'businessConfirmationChart'
+      );
+      
+      console.log('事業所タブのグラフ描画が完了しました');
+    } catch (error) {
+      console.error('事業所タブのグラフ描画中にエラーが発生しました:', error);
+      
+      // エラーメッセージを表示
+      const chartContainers = document.querySelectorAll('.business-chart-container');
+      chartContainers.forEach(container => {
+        container.innerHTML = '<div class="alert alert-danger">グラフ描画エラー</div>';
+      });
+    }
+  }
+  
+  // 事業所の時間比較グラフを描画する関数
+  function renderBusinessTimeComparisonChart(canvasId, title, beforeData, afterData, dataKey, chartKey) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) {
+      console.warn(`グラフ描画: キャンバス '${canvasId}' が見つかりません。`);
+      return;
+    }
+    
+    // データの準備
+    const calculateTotalTime = (data, key) => {
+      if (!data || data.length === 0) return 0;
+      const sum = data.reduce((acc, row) => {
+        const value = parseFloat(row[key]) || 0;
+        return acc + value;
+      }, 0);
+      // 分から時間に変換（小数点以下1桁）
+      return Math.round((sum / 60) * 10) / 10;
+    };
+    
+    const beforeTotal = calculateTotalTime(beforeData, dataKey);
+    const afterTotal = calculateTotalTime(afterData, dataKey);
+    
+    // 既存のチャートを破棄
+    if (window.businessCharts && window.businessCharts[chartKey]) {
+      window.businessCharts[chartKey].destroy();
+    }
+    
+    // 新しいチャートを作成
+    const ctx = canvas.getContext('2d');
+    window.businessCharts[chartKey] = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: ['導入前', '導入後'],
+        datasets: [{
+          label: title,
+          data: [beforeTotal, afterTotal],
+          backgroundColor: [
+            'rgba(255, 99, 132, 0.5)',
+            'rgba(153, 102, 255, 0.5)'
+          ],
+          borderColor: [
+            'rgba(255, 99, 132, 1)',
+            'rgba(153, 102, 255, 1)'
+          ],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+          },
+          title: {
+            display: true,
+            text: title
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: '時間'
+            }
+          }
+        }
+      }
+    });
+  }
+
+  // 概要タブのグラフを描画する関数
+  async function renderOverviewCharts() {
+    console.log('概要タブのグラフ描画を開始します...');
+    
+    try {
+      // Chart.jsが読み込まれていることを確認
+      await ensureChartJsLoaded();
+      
+      // データの存在確認
+      if (!window.__csvDataCache || 
+          !window.__csvDataCache['individual_before.csv'] || 
+          !window.__csvDataCache['individual_after.csv']) {
+        console.warn('概要グラフ描画: 必要なCSVデータがキャッシュにありません。');
+        
+        // エラーメッセージを表示
+        const chartContainers = document.querySelectorAll('.overview-chart-container');
+        chartContainers.forEach(container => {
+          container.innerHTML = '<div class="alert alert-warning">データ読み込み中...</div>';
+        });
+        
+        // 1秒後に再試行
+        setTimeout(renderOverviewCharts, 1000);
+        return;
+      }
+      
+      // 個人データを取得
+      const individualBeforeData = window.__csvDataCache['individual_before.csv'];
+      const individualAfterData = window.__csvDataCache['individual_after.csv'];
+      
+      // データが配列であり、空でないことを確認
+      if (!Array.isArray(individualBeforeData) || !Array.isArray(individualAfterData) ||
+          individualBeforeData.length === 0 || individualAfterData.length === 0) {
+        console.error('概要グラフ描画: データ形式が無効です。');
+        return;
+      }
+      
+      // 平均時間を計算する関数
+      const calculateAverageTime = (data, key) => {
+        if (!data || data.length === 0) return 0;
+        const sum = data.reduce((acc, row) => {
+          const value = parseFloat(row[key]) || 0;
+          return acc + value;
+        }, 0);
+        return Math.round(sum / data.length);
+      };
+      
+      // 各業務の平均時間を計算
+      const beforeAvgCreationTime = calculateAverageTime(individualBeforeData, '1ヶ月あたりの提供票作成時間（分）');
+      const afterAvgCreationTime = calculateAverageTime(individualAfterData, '1ヶ月あたりの提供票作成時間（分）');
+      const beforeAvgConfirmationTime = calculateAverageTime(individualBeforeData, '1ヶ月あたりの実績確認時間（分）');
+      const afterAvgConfirmationTime = calculateAverageTime(individualAfterData, '1ヶ月あたりの実績確認時間（分）');
+      const beforeAvgModificationTime = calculateAverageTime(individualBeforeData, '利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）');
+      const afterAvgModificationTime = calculateAverageTime(individualAfterData, '利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）');
+      
+      // 功率化率を計算
+      const calculateEfficiency = (before, after) => {
+        if (before <= 0) return 0;
+        return Math.round(((before - after) / before) * 100);
+      };
+      
+      const creationEfficiency = calculateEfficiency(beforeAvgCreationTime, afterAvgCreationTime);
+      const confirmationEfficiency = calculateEfficiency(beforeAvgConfirmationTime, afterAvgConfirmationTime);
+      const modificationEfficiency = calculateEfficiency(beforeAvgModificationTime, afterAvgModificationTime);
+      
+      console.log('概要グラフ用データ:', {
+        beforeAvgCreationTime, afterAvgCreationTime, creationEfficiency,
+        beforeAvgConfirmationTime, afterAvgConfirmationTime, confirmationEfficiency,
+        beforeAvgModificationTime, afterAvgModificationTime, modificationEfficiency
+      });
+      
+      // 既存のチャートを破棄
+      if (window.overviewCharts) {
+        Object.values(window.overviewCharts).forEach(chart => {
+          if (chart) chart.destroy();
+        });
+      }
+      
+      // チャートを保存するオブジェクトを初期化
+      window.overviewCharts = {};
+      
+      // 功率化率グラフを描画
+      renderEfficiencyChart(
+        'efficiency-chart',
+        '業務別効率化率',
+        [creationEfficiency, confirmationEfficiency, modificationEfficiency],
+        ['提供票作成', '実績確認', 'ケアプラン修正'],
+        'efficiencyChart'
+      );
+      
+      // 時間比較グラフを描画
+      renderTimeComparisonOverviewChart(
+        'time-comparison-chart',
+        '業務別平均時間比較',
+        [beforeAvgCreationTime, beforeAvgConfirmationTime, beforeAvgModificationTime],
+        [afterAvgCreationTime, afterAvgConfirmationTime, afterAvgModificationTime],
+        ['提供票作成', '実績確認', 'ケアプラン修正'],
+        'timeComparisonChart'
+      );
+      
+      console.log('概要タブのグラフ描画が完了しました');
+    } catch (error) {
+      console.error('概要タブのグラフ描画中にエラーが発生しました:', error);
+      
+      // エラーメッセージを表示
+      const chartContainers = document.querySelectorAll('.overview-chart-container');
+      chartContainers.forEach(container => {
+        container.innerHTML = '<div class="alert alert-danger">グラフ描画エラー</div>';
+      });
+    }
+  }
+  
+  // 功率化率グラフを描画する関数
+  function renderEfficiencyChart(canvasId, title, efficiencyData, labels, chartKey) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) {
+      console.warn(`グラフ描画: キャンバス '${canvasId}' が見つかりません。`);
+      return;
+    }
+    
+    // 既存のチャートを破棄
+    if (window.overviewCharts && window.overviewCharts[chartKey]) {
+      window.overviewCharts[chartKey].destroy();
+    }
+    
+    // 新しいチャートを作成
+    const ctx = canvas.getContext('2d');
+    window.overviewCharts[chartKey] = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [{
+          label: '効率化率',
+          data: efficiencyData,
+          backgroundColor: [
+            'rgba(255, 99, 132, 0.5)',
+            'rgba(54, 162, 235, 0.5)',
+            'rgba(255, 206, 86, 0.5)'
+          ],
+          borderColor: [
+            'rgba(255, 99, 132, 1)',
+            'rgba(54, 162, 235, 1)',
+            'rgba(255, 206, 86, 1)'
+          ],
+          borderWidth: 1
+        }]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+          },
+          title: {
+            display: true,
+            text: title
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: '%'
+            }
+          }
+        }
+      }
+    });
+  }
+  
+  // 時間比較概要グラフを描画する関数
+  function renderTimeComparisonOverviewChart(canvasId, title, beforeData, afterData, labels, chartKey) {
+    const canvas = document.getElementById(canvasId);
+    if (!canvas) {
+      console.warn(`グラフ描画: キャンバス '${canvasId}' が見つかりません。`);
+      return;
+    }
+    
+    // 既存のチャートを破棄
+    if (window.overviewCharts && window.overviewCharts[chartKey]) {
+      window.overviewCharts[chartKey].destroy();
+    }
+    
+    // 新しいチャートを作成
+    const ctx = canvas.getContext('2d');
+    window.overviewCharts[chartKey] = new Chart(ctx, {
+      type: 'bar',
+      data: {
+        labels: labels,
+        datasets: [
+          {
+            label: '導入前',
+            data: beforeData,
+            backgroundColor: 'rgba(54, 162, 235, 0.5)',
+            borderColor: 'rgba(54, 162, 235, 1)',
+            borderWidth: 1
+          },
+          {
+            label: '導入後',
+            data: afterData,
+            backgroundColor: 'rgba(75, 192, 192, 0.5)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+          }
+        ]
+      },
+      options: {
+        responsive: true,
+        plugins: {
+          legend: {
+            display: true,
+            position: 'top',
+          },
+          title: {
+            display: true,
+            text: title
+          }
+        },
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: '分'
+            }
+          }
+        }
+      }
+    });
+  }
 </script>
-
-<style>
-  :root {
-    --primary-color: #2c5282;
-    --primary-light: #4299e1;
-    --primary-dark: #1a365d;
-    --secondary-color: #38b2ac;
-    --secondary-light: #4fd1c5;
-    --secondary-dark: #285e61;
-    --accent-color: #ed8936;
-    --accent-light: #f6ad55;
-    --accent-dark: #c05621;
-    --text-primary: #2d3748;
-    --text-secondary: #4a5568;
-    --text-light: #718096;
-    --bg-primary: #ffffff;
-    --bg-secondary: #f7fafc;
-    --bg-accent: #ebf4ff;
-    --border-color: #e2e8f0;
-    --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    --border-radius: 8px;
-    --transition: all 0.3s ease;
-  }
-
-  .container {
-    max-width: 1200px;
-    margin: 0 auto;
-    padding: 0 1.5rem;
-  }
-
-  /* ヒーローセクション */
-  .hero {
-    background-color: var(--bg-accent);
-    padding: 3rem 0;
-    margin-bottom: 2rem;
-    text-align: center;
-  }
-
-  .hero h1 {
-    color: var(--primary-dark);
-    margin-bottom: 1rem;
-    font-size: 2.2rem;
-  }
-
-  .hero .lead {
-    font-size: 1.2rem;
-    color: var(--text-secondary);
-    max-width: 800px;
-    margin: 0 auto;
-  }
-
-  /* カードスタイル */
-  .card {
-    background-color: var(--bg-primary);
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
-    padding: 2rem;
-    margin-bottom: 2rem;
-  }
-
-  /* 統計グリッド */
-  .stats-grid, .statistics-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-top: 1.5rem;
-  }
-
-  .stat-card, .statistic-card {
-    background-color: var(--bg-secondary);
-    border-radius: var(--border-radius);
-    padding: 1.5rem;
-    text-align: center;
-    transition: var(--transition);
-  }
-
-  .stat-card:hover, .statistic-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-  }
-
-  .stat-value, .statistic-value {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--primary-color);
-    margin-bottom: 0.5rem;
-  }
-
-  .stat-label {
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 0.5rem;
-  }
-
-  .stat-description {
-    font-size: 0.9rem;
-    color: var(--text-light);
-  }
-
-  /* 分析オプション */
-  .options-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-    gap: 1.5rem;
-    margin-top: 1.5rem;
-  }
-
-  .option-card {
-    background-color: var(--bg-secondary);
-    border-radius: var(--border-radius);
-    padding: 1.5rem;
-    transition: var(--transition);
-    cursor: pointer;
-  }
-
-  .option-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-    background-color: var(--primary-light);
-    color: white;
-  }
-
-  .option-card h3 {
-    font-size: 1.3rem;
-    margin-bottom: 0.5rem;
-  }
-
-  /* サマリーセクション */
-  .summary-section {
-    padding: 2rem;
-    background-color: var(--bg-primary);
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
-    margin-bottom: 2rem;
-  }
-
-  .summary-stats {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1.5rem;
-    margin-top: 1.5rem;
-  }
-
-  /* メリットグリッド */
-  .benefits-grid {
-    padding: 2rem;
-    background-color: var(--bg-primary);
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
-    margin-bottom: 2rem;
-  }
-
-  .benefit-card {
-    background-color: var(--bg-secondary);
-    border-radius: var(--border-radius);
-    padding: 1.5rem;
-    margin-top: 1.5rem;
-    transition: var(--transition);
-  }
-
-  .benefit-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
-  }
-
-  .benefit-card h3 {
-    color: var(--primary-color);
-    margin-bottom: 0.5rem;
-  }
-
-  /* データセクション */
-  .data-section {
-    padding: 2rem;
-    background-color: var(--bg-primary);
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
-    margin-bottom: 2rem;
-  }
-
-  .data-content {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2rem;
-    margin-top: 1.5rem;
-  }
-
-  .data-chart {
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-    height: 200px;
-    position: relative;
-  }
-
-  .chart-bar {
-    width: 60px;
-    margin: 0 10px;
-    border-radius: 4px 4px 0 0;
-  }
-
-  .chart-before {
-    background-color: var(--primary-color);
-  }
-
-  .chart-after {
-    background-color: var(--accent-color);
-  }
-
-  .chart-label {
-    position: absolute;
-    bottom: -30px;
-    text-align: center;
-    font-size: 0.8rem;
-    color: var(--text-secondary);
-    width: 100%;
-  }
-
-  .chart-title {
-    position: absolute;
-    bottom: -50px;
-    text-align: center;
-    font-weight: 600;
-    color: var(--text-primary);
-    width: 100%;
-  }
-
-  /* レポートセクション */
-  .report-section {
-    padding: 2rem;
-    background-color: var(--bg-primary);
-    border-radius: var(--border-radius);
-    box-shadow: var(--box-shadow);
-    margin-bottom: 2rem;
-  }
-
-  .report-container {
-    margin-top: 1.5rem;
-  }
-
-  .report-card {
-    background-color: var(--bg-secondary);
-    border-radius: var(--border-radius);
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
-  }
-
-  .report-card h3 {
-    color: var(--primary-color);
-    margin-bottom: 1rem;
-  }
-
-  .report-content p {
-    margin-bottom: 0.5rem;
-  }
-
-  /* レスポンシブデザイン */
-  @media (max-width: 768px) {
-    .data-content {
-      grid-template-columns: 1fr;
-    }
-    
-    .hero h1 {
-      font-size: 1.8rem;
-    }
-    
-    .hero .lead {
-      font-size: 1rem;
-    }
-    
-    .stat-value, .statistic-value {
-      font-size: 1.6rem;
-    }
-  }
-</style>

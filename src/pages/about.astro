@@ -1,0 +1,153 @@
+---
+import Layout from '../layouts/Layout.astro';
+
+// 調査概要ページ
+---
+
+<Layout title="調査概要 | 宮崎ケアプラン分析">
+  <main>
+    <div class="container">
+      <section class="page-header">
+        <h1>調査概要</h1>
+      </section>
+      
+      <section class="summary-section">
+        <div class="summary-content">
+          <p>本調査は、宮崎県内の介護事業所におけるケアプランデータ連携システム導入の効果を測定するために実施されました。</p>
+          <p>調査期間: 2024年1月〜2024年2月</p>
+          <p>調査対象: 宮崎県内の介護事業所20カ所、ケアマネージャー50名</p>
+          <p>調査方法: 導入前後でのタイムスタディ調査（業務時間計測）</p>
+          
+          <h2>調査の背景と目的</h2>
+          <p>高齢化社会の進展に伴い、介護サービスの需要が増加する中、限られた人的資源で質の高いケアを提供するためには業務効率化が不可欠です。本調査は、ケアプランデータ連携システムの導入が介護事業所の業務効率化にどの程度貢献するかを定量的に評価することを目的としています。</p>
+          
+          <h2>測定項目</h2>
+          <ul>
+            <li><strong>提供票作成時間:</strong> 利用者ごとのサービス提供票を作成するのに要する時間</li>
+            <li><strong>実績確認時間:</strong> サービス提供実績を確認・入力するのに要する時間</li>
+            <li><strong>修正対応時間:</strong> ケアプラン修正依頼を受けてから修正完了までに要する時間</li>
+          </ul>
+          
+          <h2>調査方法の詳細</h2>
+          <p>参加したケアマネージャーは、システム導入前と導入後の1ヶ月間において、上記の業務に費やした時間を記録しました。記録されたデータは統計的に分析され、平均値を算出しています。</p>
+          
+          <h2>分析結果の活用</h2>
+          <p>本調査の結果は、介護事業所における業務効率化の取り組みの参考資料として活用されることを想定しています。また、ケアプランデータ連携システムの改善にも役立てられます。</p>
+          
+          <h2>調査における課題と限界</h2>
+          <p>本調査では、以下の点に留意する必要があります：</p>
+          <ul>
+            <li>調査対象が宮崎県内に限定されているため、地域特性による影響がある可能性があります</li>
+            <li>システム導入直後の調査であるため、長期的な効果については別途検証が必要です</li>
+            <li>業務時間の自己申告に基づくデータであるため、主観的バイアスが含まれる可能性があります</li>
+          </ul>
+          
+          <h2>今後の展望</h2>
+          <p>本調査結果を踏まえ、以下の取り組みを検討しています：</p>
+          <ul>
+            <li>システムの使い勝手向上のためのユーザーインターフェース改善</li>
+            <li>他地域での同様の調査実施による地域間比較</li>
+            <li>長期的な効果測定のためのフォローアップ調査</li>
+          </ul>
+          
+          <div class="back-link">
+            <a href="/">トップページに戻る</a>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  .container {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+  
+  .page-header {
+    margin: 2rem 0 3rem;
+    text-align: center;
+  }
+  
+  .page-header h1 {
+    font-size: 2.2rem;
+    color: var(--primary-color);
+    margin-bottom: 1rem;
+  }
+  
+  .summary-section {
+    margin-bottom: 3rem;
+  }
+  
+  .summary-content {
+    background-color: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    padding: 2rem;
+    box-shadow: var(--box-shadow);
+  }
+  
+  .summary-content p {
+    margin-bottom: 1rem;
+    line-height: 1.6;
+  }
+  
+  .summary-content h2 {
+    font-size: 1.4rem;
+    margin: 2rem 0 1rem;
+    color: var(--primary-color);
+    border-left: 4px solid var(--primary-color);
+    padding-left: 0.8rem;
+  }
+  
+  .summary-content h2:first-of-type {
+    margin-top: 2.5rem;
+  }
+  
+  .summary-content ul {
+    margin: 0.8rem 0 1.5rem 1.5rem;
+  }
+  
+  .summary-content li {
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+  }
+  
+  .summary-content li strong {
+    color: var(--primary-dark);
+  }
+  
+  .back-link {
+    margin-top: 2.5rem;
+    text-align: center;
+  }
+  
+  .back-link a {
+    display: inline-block;
+    padding: 0.8rem 1.5rem;
+    background-color: var(--primary-color);
+    color: white;
+    text-decoration: none;
+    border-radius: var(--border-radius);
+    transition: background-color 0.3s ease;
+  }
+  
+  .back-link a:hover {
+    background-color: var(--primary-dark);
+  }
+  
+  @media (max-width: 768px) {
+    .page-header h1 {
+      font-size: 1.8rem;
+    }
+    
+    .summary-content {
+      padding: 1.5rem;
+    }
+    
+    .summary-content h2 {
+      font-size: 1.3rem;
+    }
+  }
+</style>

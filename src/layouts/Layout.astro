@@ -12,11 +12,13 @@ const { title } = Astro.props;
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js" defer></script>
+    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.3.2/papaparse.min.js"></script>
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
   </head>
   <body>
     <header data-astro-cid-sz7xmlte>
@@ -24,18 +26,12 @@ const { title } = Astro.props;
         <div class="logo" data-astro-cid-sz7xmlte>
           <h1 data-astro-cid-sz7xmlte>宮崎ケアプランタイムスタディ分析</h1>
         </div>
-        <nav data-astro-cid-sz7xmlte>
-          <ul data-astro-cid-sz7xmlte>
-            <li data-astro-cid-sz7xmlte><a href="/" data-astro-cid-sz7xmlte>ホーム</a></li>
-            <li data-astro-cid-sz7xmlte><a href="/about" data-astro-cid-sz7xmlte>調査概要</a></li>
-          </ul>
-        </nav>
       </div>
     </header>
     <slot />
     <footer data-astro-cid-sz7xmlte>
       <div class="container" data-astro-cid-sz7xmlte>
-        <p data-astro-cid-sz7xmlte>&copy; 2024 宮崎ケアプランタイムスタディ分析プロジェクト</p>
+        <p data-astro-cid-sz7xmlte>Copyright &copy; タダカヨ｜タダでカイゴをヨクしよう</p>
       </div>
     </footer>
   </body>
@@ -158,7 +154,7 @@ const { title } = Astro.props;
 
   header .container[data-astro-cid-sz7xmlte] {
     display: flex;
-    justify-content: space-between;
+    justify-content: center;
     align-items: center;
   }
 
@@ -172,44 +168,6 @@ const { title } = Astro.props;
     margin: 0;
     color: var(--primary-color);
     font-weight: 700;
-  }
-
-  nav[data-astro-cid-sz7xmlte] {
-    display: flex;
-    align-items: center;
-  }
-
-  nav ul[data-astro-cid-sz7xmlte] {
-    display: flex;
-    list-style: none;
-    gap: 2rem;
-  }
-
-  nav a[data-astro-cid-sz7xmlte] {
-    color: var(--text-secondary);
-    font-weight: 500;
-    font-size: 1rem;
-    transition: var(--transition);
-    position: relative;
-  }
-
-  nav a[data-astro-cid-sz7xmlte]:hover {
-    color: var(--primary-color);
-  }
-
-  nav a[data-astro-cid-sz7xmlte]::after {
-    content: '';
-    position: absolute;
-    bottom: -5px;
-    left: 0;
-    width: 0;
-    height: 2px;
-    background-color: var(--primary-color);
-    transition: var(--transition);
-  }
-
-  nav a[data-astro-cid-sz7xmlte]:hover::after {
-    width: 100%;
   }
 
   /* フッタースタイル */
@@ -227,18 +185,6 @@ const { title } = Astro.props;
     header .container[data-astro-cid-sz7xmlte] {
       flex-direction: column;
       gap: 1rem;
-    }
-
-    nav ul[data-astro-cid-sz7xmlte] {
-      gap: 1rem;
-    }
-  }
-
-  @media (max-width: 480px) {
-    nav ul[data-astro-cid-sz7xmlte] {
-      flex-direction: column;
-      align-items: center;
-      gap: 0.5rem;
     }
   }
 
@@ -324,7 +270,7 @@ const { title } = Astro.props;
       max-width: 100%;
     }
 
-    header, footer, nav {
+    header, footer {
       display: none;
     }
 
