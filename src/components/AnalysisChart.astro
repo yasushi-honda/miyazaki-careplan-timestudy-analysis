@@ -1,0 +1,43 @@
+---
+import type { ChartConfiguration, ChartTypeRegistry } from 'chart.js';
+
+interface Props {
+  type: keyof ChartTypeRegistry;
+  data: ChartConfiguration['data'];
+  options?: ChartConfiguration['options'];
+  chartId: string; // 各グラフを一意に識別するためのID
+}
+
+const { type, data, options, chartId } = Astro.props;
+
+const chartConfig = {
+  type,
+  data,
+  options: options ?? {},
+};
+---
+
+<div>
+  <canvas id={chartId}></canvas>
+</div>
+
+<script define:vars={{ chartId, chartConfig }}>
+  import Chart from 'chart.js/auto';
+
+  const ctx = document.getElementById(chartId);
+  if (ctx instanceof HTMLCanvasElement) {
+    new Chart(ctx, chartConfig);
+  } else {
+    console.error(`Canvas element with id "${chartId}" not found.`);
+  }
+</script>
+
+<style>
+  div {
+    margin-bottom: 2rem;
+    padding: 1.5rem;
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: var(--box-shadow);
+  }
+</style>

@@ -1,15 +1,18 @@
 ---
+import Layout from '../layouts/Layout.astro';
 ---
-<html lang="ja">
-<head>
-	<meta charset="utf-8" />
-	<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-	<meta name="viewport" content="width=device-width" />
-	<meta name="generator" content={Astro.generator} />
-	<title>宮崎ケアプラン分析</title>
-</head>
-<body>
-	<h1>宮崎県ケアプランデータ連携システム導入支援 タイムスタディ分析</h1>
-	<p>分析結果を掲載予定です。</p>
-</body>
-</html>
+
+<Layout title="トップページ | 宮崎ケアプラン分析">
+	<h1>宮崎県ケアプランデータ連携システム導入支援<br/>タイムスタディ分析レポート</h1>
+	<p>
+		このサイトは、宮崎県におけるケアプランデータ連携システムの導入効果をタイムスタディ分析に基づき可視化したものです。
+		事業所および個人の業務時間が、システム導入前後でどのように変化したかを分析し、その結果をグラフで示します。
+	</p>
+  <p>
+    以下のリンクから、それぞれの分析結果をご覧ください。
+  </p>
+  <ul>
+    <li><a href="/business">事業所分析の結果を見る</a></li>
+    <li><a href="/individual">個人分析の結果を見る</a></li>
+  </ul>
+</Layout>

@@ -1,0 +1,88 @@
+---
+interface Props {
+	title: string;
+}
+
+const { title } = Astro.props;
+---
+
+<!doctype html>
+<html lang="ja">
+	<head>
+		<meta charset="UTF-8" />
+		<meta name="description" content="宮崎県ケアプランデータ連携システム導入支援タイムスタディ分析" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<title>{title}</title>
+    <style>
+      :root {
+        --accent: #2337ff;
+        --accent-dark: #000d8a;
+        --black: 15, 18, 25;
+        --gray: 96, 115, 159;
+        --gray-light: 212, 217, 232;
+        --gray-dark: 49, 53, 68;
+        --gray-gradient: rgba(var(--gray-light), 50%), rgba(var(--gray-light), 100%);
+        --box-shadow: 0 2px 6px rgba(var(--black), 25%), 0 4px 12px rgba(var(--black), 25%);
+      }
+      html {
+        font-family: system-ui, sans-serif;
+        background-color: #F6F6F6;
+      }
+      body {
+        margin: 0;
+      }
+      main {
+        margin: auto;
+        padding: 1rem;
+        width: 800px;
+        max-width: calc(100% - 2rem);
+        color: rgb(var(--black));
+        font-size: 18px;
+        line-height: 1.6;
+      }
+      h1 {
+        font-size: 2.5rem;
+        font-weight: 700;
+        line-height: 1;
+        text-align: center;
+        margin-bottom: 1em;
+      }
+      nav {
+        background-color: rgb(var(--gray-dark));
+        padding: 1rem;
+        margin-bottom: 2rem;
+        border-radius: 0 0 8px 8px;
+      }
+      nav ul {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        gap: 1rem;
+      }
+      nav a {
+        color: white;
+        text-decoration: none;
+        font-weight: 500;
+      }
+      nav a:hover {
+        text-decoration: underline;
+      }
+    </style>
+	</head>
+	<body>
+    <nav>
+      <ul>
+        <li><a href="/">トップ</a></li>
+        <li><a href="/business">事業所分析</a></li>
+        <li><a href="/individual">個人分析</a></li>
+      </ul>
+    </nav>
+		<main>
+			<slot />
+		</main>
+	</body>
+</html>
