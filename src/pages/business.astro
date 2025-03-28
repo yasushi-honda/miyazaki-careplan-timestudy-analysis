@@ -1,9 +1,155 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import AnalysisChart from '../components/AnalysisChart.astro';
+import Papa from 'papaparse'; // Assuming papaparse is installed or can be used via CDN in Astro
+
+// Function to fetch and parse CSV data
+async function getCsvData(url) {
+  try {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`);
+    }
+    const csvText = await response.text();
+    // Remove the header explanation lines (assuming they are consistent)
+    const lines = csvText.split('\n');
+    // Keep header (line 0) and data lines (line 4 onwards)
+    const relevantCsvText = [lines[0], ...lines.slice(4)].join('\n');
+    const parsedData = Papa.parse(relevantCsvText, {
+      header: true,
+      skipEmptyLines: true,
+    });
+    return parsedData.data;
+  } catch (error) {
+    console.error("Failed to fetch or parse CSV:", error);
+    return []; // Return empty array on error
+  }
+}
+
+// Function to aggregate sharing methods
+function aggregateSharingMethods(data) {
+  const counts = {};
+  // Adjust the key based on the actual header name for the sharing methods column
+  const sharingMethodHeader = 'ケアプラン（居宅サービス計画書第１～３表）、サービス利用票（提供票）【予定】の居宅サービス事業所への共有方法について教えてください。（複数回答可）'; // Use the exact header name from CSV
+
+  data.forEach(row => {
+    const methodsString = row[sharingMethodHeader];
+    if (methodsString) {
+      const methods = methodsString.split(';').map(method => method.trim()).filter(method => method); // Split, trim, and remove empty strings
+      methods.forEach(method => {
+        counts[method] = (counts[method] || 0) + 1;
+      });
+    }
+  });
+  return counts;
+}
+
+// Fetch data for both before and after
+const beforeData = await getCsvData('/data/business_before.csv');
+const afterData = await getCsvData('/data/business_after.csv');
+
+// Aggregate sharing methods
+const beforeCounts = aggregateSharingMethods(beforeData);
+const afterCounts = aggregateSharingMethods(afterData);
+
+// Prepare data for the chart
+const allMethods = Array.from(new Set([...Object.keys(beforeCounts), ...Object.keys(afterCounts)])).sort();
+
+const chartData = {
+  labels: allMethods,
+  datasets: [
+    {
+      label: '導入前 (Before)',
+      data: allMethods.map(method => beforeCounts[method] || 0),
+      backgroundColor: 'rgba(255, 99, 132, 0.5)', // Reddish
+      borderColor: 'rgb(255, 99, 132)',
+      borderWidth: 1
+    },
+    {
+      label: '導入後 (After)',
+      data: allMethods.map(method => afterCounts[method] || 0),
+      backgroundColor: 'rgba(54, 162, 235, 0.5)', // Bluish
+      borderColor: 'rgb(54, 162, 235)',
+      borderWidth: 1
+    }
+  ]
+};
+
+const chartOptions = {
+  scales: {
+    y: {
+      beginAtZero: true,
+      title: {
+        display: true,
+        text: '回答事業所数' // Number of responding businesses
+      }
+    },
+    x: {
+       title: {
+        display: true,
+        text: 'ケアプラン共有方法' // Care Plan Sharing Method
+       }
+    }
+  },
+  plugins: {
+    title: {
+        display: true,
+        text: 'ケアプラン共有方法の変化 (システム導入前後比較)', // Change in Care Plan Sharing Methods (Before/After Comparison)
+        font: {
+            size: 18
+        }
+    },
+    legend: {
+      position: 'top',
+    }
+  },
+  responsive: true,
+  maintainAspectRatio: false // Adjust as needed
+};
+
+// Define a unique ID for this chart instance
+const chartId = "sharingMethodsChart";
 ---
 
 <Layout title="事業所分析 | 宮崎ケアプラン分析">
   <h1>事業所タイムスタディ分析</h1>
   <p>ここに事業所データの分析結果（ビフォーアフター比較）を表示します。</p>
-  <!-- グラフコンポーネントを後で追加 -->
+
+  <div style="height: 500px; width: 80%; margin: 20px auto;">
+    <AnalysisChart chartId={chartId} type="bar" data={chartData} options={chartOptions} />
+  </div>
+
+  <section class="analysis-details">
+    <h2>分析結果の詳細</h2>
+    <p>
+      上のグラフは、ケアプランデータ連携システムの導入前後における、ケアプラン（居宅サービス計画書第１～３表）およびサービス利用票（提供票）の共有方法の変化を示しています。
+      各棒は、それぞれの共有方法を選択した事業所の数を表します。「導入前」と「導入後」のデータを比較することで、システム導入が共有方法にどのような影響を与えたかを確認できます。
+    </p>
+    <p>
+      特に、「ケアプランデータ連携システム」の利用率の変化や、「FAX」、「持参」、「郵送」といった従来の方法の利用率の変化に注目してください。
+    </p>
+    </section>
+
 </Layout>
+
+<style>
+  .analysis-details {
+    margin: 30px auto;
+    padding: 20px;
+    background-color: #f9f9f9;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    width: 80%;
+    font-family: sans-serif;
+  }
+  .analysis-details h2 {
+    color: #333;
+    border-bottom: 2px solid #ccc;
+    padding-bottom: 10px;
+    margin-bottom: 15px;
+  }
+  .analysis-details p {
+    color: #555;
+    line-height: 1.6;
+  }
+</style>
