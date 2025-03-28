@@ -22,3 +22,6 @@ dist/
 *.sw?
 
 .vercel
+
+# Local Netlify folder
+.netlify

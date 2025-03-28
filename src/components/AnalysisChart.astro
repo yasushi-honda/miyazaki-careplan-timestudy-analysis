@@ -1,43 +1,118 @@
 ---
-import type { ChartConfiguration, ChartTypeRegistry } from 'chart.js';
-
-interface Props {
-  type: keyof ChartTypeRegistry;
-  data: ChartConfiguration['data'];
-  options?: ChartConfiguration['options'];
-  chartId: string; // 各グラフを一意に識別するためのID
-}
-
-const { type, data, options, chartId } = Astro.props;
-
-const chartConfig = {
-  type,
-  data,
-  options: options ?? {},
-};
+// クライアントサイドのみで実行するチャートコンポーネント
+const { id = 'analysisChart', chartType = 'bar', beforeData = {}, afterData = {}, labels, beforeLabel = '導入前', afterLabel = '導入後', yAxisLabel = '', xAxisLabel = '', chartTitle = '' } = Astro.props;
 ---
 
-<div>
-  <canvas id={chartId}></canvas>
+<div class="chart-container">
+  <canvas id={id}></canvas>
 </div>
 
-<script define:vars={{ chartId, chartConfig }}>
-  import Chart from 'chart.js/auto';
-
-  const ctx = document.getElementById(chartId);
-  if (ctx instanceof HTMLCanvasElement) {
-    new Chart(ctx, chartConfig);
-  } else {
-    console.error(`Canvas element with id "${chartId}" not found.`);
+<script define:vars={{ id, chartType, beforeData, afterData, labels, beforeLabel, afterLabel, yAxisLabel, xAxisLabel, chartTitle }}>
+document.addEventListener('DOMContentLoaded', () => {
+  try {
+    // 日本語文字列を安全に使うため、クライアントサイドでのみ設定
+    const safeLabels = ["FAX", "メール", "持参", "郵送", "システム", "その他"];
+    
+    // データの準備
+    let beforeValues = [];
+    let afterValues = [];
+    
+    // データ形式に応じた処理
+    if (Array.isArray(labels)) {
+      // 指定されたラベルを使用
+      safeLabels.forEach(label => {
+        beforeValues.push(beforeData[label] || 0);
+        afterValues.push(afterData[label] || 0);
+      });
+    } else {
+      // デフォルトの共有方法を使用
+      beforeValues = [
+        beforeData["FAX"] || 0,
+        beforeData["メール"] || 0,
+        beforeData["持参"] || 0,
+        beforeData["郵送"] || 0,
+        beforeData["システム"] || 0,
+        beforeData["その他"] || 0
+      ];
+      
+      afterValues = [
+        afterData["FAX"] || 0,
+        afterData["メール"] || 0,
+        afterData["持参"] || 0,
+        afterData["郵送"] || 0,
+        afterData["システム"] || 0,
+        afterData["その他"] || 0
+      ];
+    }
+    
+    // チャート設定
+    const chartConfig = {
+      type: chartType,
+      data: {
+        labels: safeLabels,
+        datasets: [
+          {
+            label: beforeLabel,
+            data: beforeValues,
+            backgroundColor: 'rgba(75, 192, 192, 0.5)',
+            borderColor: 'rgba(75, 192, 192, 1)',
+            borderWidth: 1
+          },
+          {
+            label: afterLabel,
+            data: afterValues,
+            backgroundColor: 'rgba(153, 102, 255, 0.5)',
+            borderColor: 'rgba(153, 102, 255, 1)',
+            borderWidth: 1
+          }
+        ]
+      },
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true,
+            title: {
+              display: true,
+              text: yAxisLabel
+            }
+          },
+          x: {
+            title: {
+              display: true,
+              text: xAxisLabel
+            }
+          }
+        },
+        plugins: {
+          title: {
+            display: !!chartTitle,
+            text: chartTitle
+          },
+          legend: {
+            position: 'top',
+          }
+        }
+      }
+    };
+    
+    const canvas = document.getElementById(id);
+    if (canvas) {
+      new Chart(canvas.getContext('2d'), chartConfig);
+    } else {
+      console.error(`Canvas element with id "${id}" not found.`);
+    }
+  } catch (error) {
+    console.error('チャート初期化エラー:', error);
   }
+});
 </script>
 
 <style>
-  div {
-    margin-bottom: 2rem;
-    padding: 1.5rem;
-    background-color: white;
-    border-radius: 8px;
-    box-shadow: var(--box-shadow);
-  }
+.chart-container {
+  position: relative;
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto 2rem auto;
+  height: 400px;
+}
 </style>

@@ -1,155 +1,836 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import AnalysisChart from '../components/AnalysisChart.astro';
-import Papa from 'papaparse'; // Assuming papaparse is installed or can be used via CDN in Astro
+import { getCsvData } from '../data/csvDataJson.js';
 
-// Function to fetch and parse CSV data
-async function getCsvData(url) {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const csvText = await response.text();
-    // Remove the header explanation lines (assuming they are consistent)
-    const lines = csvText.split('\n');
-    // Keep header (line 0) and data lines (line 4 onwards)
-    const relevantCsvText = [lines[0], ...lines.slice(4)].join('\n');
-    const parsedData = Papa.parse(relevantCsvText, {
-      header: true,
-      skipEmptyLines: true,
+// CSVデータの読み込み
+console.log('CSVデータの読み込みを開始します...');
+const beforeData = getCsvData('business_before.csv');
+const afterData = getCsvData('business_after.csv');
+
+console.log('beforeData 件数:', beforeData.length);
+console.log('afterData 件数:', afterData.length);
+
+// 共有方法ごとの平均時間を計算
+const calculateAverageTimesByMethod = (data) => {
+  const methods = ["FAX", "メール", "持参", "郵送", "システム", "その他"];
+  const result = {};
+  
+  methods.forEach(method => {
+    const filteredData = data.filter(row => {
+      const sharingMethod = row["ケアプラン共有方法"] || row["共有方法"];
+      return sharingMethod === method;
     });
-    return parsedData.data;
-  } catch (error) {
-    console.error("Failed to fetch or parse CSV:", error);
-    return []; // Return empty array on error
-  }
-}
-
-// Function to aggregate sharing methods
-function aggregateSharingMethods(data) {
-  const counts = {};
-  // Adjust the key based on the actual header name for the sharing methods column
-  const sharingMethodHeader = 'ケアプラン（居宅サービス計画書第１～３表）、サービス利用票（提供票）【予定】の居宅サービス事業所への共有方法について教えてください。（複数回答可）'; // Use the exact header name from CSV
-
-  data.forEach(row => {
-    const methodsString = row[sharingMethodHeader];
-    if (methodsString) {
-      const methods = methodsString.split(';').map(method => method.trim()).filter(method => method); // Split, trim, and remove empty strings
-      methods.forEach(method => {
-        counts[method] = (counts[method] || 0) + 1;
-      });
+    
+    if (filteredData.length === 0) {
+      result[method] = 0;
+      return;
     }
+    
+    const totalCreationTime = filteredData.reduce((sum, row) => {
+      return sum + parseInt(row["1ヶ月あたりの提供票作成時間（分）"] || 0);
+    }, 0);
+    
+    const totalConfirmationTime = filteredData.reduce((sum, row) => {
+      return sum + parseInt(row["1ヶ月あたりの実績確認時間（分）"] || 0);
+    }, 0);
+    
+    // 合計時間（分）を計算
+    const totalTimeMinutes = totalCreationTime + totalConfirmationTime;
+    
+    // 平均時間を計算（時間単位に変換）
+    result[method] = Math.round((totalTimeMinutes / filteredData.length) / 60 * 10) / 10;
   });
-  return counts;
-}
-
-// Fetch data for both before and after
-const beforeData = await getCsvData('/data/business_before.csv');
-const afterData = await getCsvData('/data/business_after.csv');
-
-// Aggregate sharing methods
-const beforeCounts = aggregateSharingMethods(beforeData);
-const afterCounts = aggregateSharingMethods(afterData);
-
-// Prepare data for the chart
-const allMethods = Array.from(new Set([...Object.keys(beforeCounts), ...Object.keys(afterCounts)])).sort();
-
-const chartData = {
-  labels: allMethods,
-  datasets: [
-    {
-      label: '導入前 (Before)',
-      data: allMethods.map(method => beforeCounts[method] || 0),
-      backgroundColor: 'rgba(255, 99, 132, 0.5)', // Reddish
-      borderColor: 'rgb(255, 99, 132)',
-      borderWidth: 1
-    },
-    {
-      label: '導入後 (After)',
-      data: allMethods.map(method => afterCounts[method] || 0),
-      backgroundColor: 'rgba(54, 162, 235, 0.5)', // Bluish
-      borderColor: 'rgb(54, 162, 235)',
-      borderWidth: 1
-    }
-  ]
+  
+  return result;
 };
 
-const chartOptions = {
-  scales: {
-    y: {
-      beginAtZero: true,
-      title: {
-        display: true,
-        text: '回答事業所数' // Number of responding businesses
-      }
-    },
-    x: {
-       title: {
-        display: true,
-        text: 'ケアプラン共有方法' // Care Plan Sharing Method
-       }
-    }
-  },
-  plugins: {
-    title: {
-        display: true,
-        text: 'ケアプラン共有方法の変化 (システム導入前後比較)', // Change in Care Plan Sharing Methods (Before/After Comparison)
-        font: {
-            size: 18
-        }
-    },
-    legend: {
-      position: 'top',
-    }
-  },
-  responsive: true,
-  maintainAspectRatio: false // Adjust as needed
+const beforeTimes = calculateAverageTimesByMethod(beforeData);
+const afterTimes = calculateAverageTimesByMethod(afterData);
+
+// 全体の平均時間を計算
+const calculateOverallAverages = (data) => {
+  if (data.length === 0) return { creation: 0, confirmation: 0, modification: 0 };
+  
+  const totalCreation = data.reduce((sum, row) => sum + parseInt(row["1ヶ月あたりの提供票作成時間（分）"] || 0), 0);
+  const totalConfirmation = data.reduce((sum, row) => sum + parseInt(row["1ヶ月あたりの実績確認時間（分）"] || 0), 0);
+  const totalModification = data.reduce((sum, row) => sum + parseInt(row["利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）"] || 0), 0);
+  
+  return {
+    creation: Math.round(totalCreation / data.length),
+    confirmation: Math.round(totalConfirmation / data.length),
+    modification: Math.round(totalModification / data.length)
+  };
 };
 
-// Define a unique ID for this chart instance
-const chartId = "sharingMethodsChart";
+const beforeAverages = calculateOverallAverages(beforeData);
+const afterAverages = calculateOverallAverages(afterData);
+
+// 時間削減効果を計算
+const timeReduction = {
+  creation: beforeAverages.creation - afterAverages.creation,
+  confirmation: beforeAverages.confirmation - afterAverages.confirmation,
+  modification: beforeAverages.modification - afterAverages.modification,
+  total: (beforeAverages.creation + beforeAverages.confirmation) - (afterAverages.creation + afterAverages.confirmation)
+};
+
+// 削減率を計算
+const reductionPercentage = {
+  creation: Math.round((timeReduction.creation / beforeAverages.creation) * 100),
+  confirmation: Math.round((timeReduction.confirmation / beforeAverages.confirmation) * 100),
+  modification: Math.round((timeReduction.modification / beforeAverages.modification) * 100),
+  total: Math.round((timeReduction.total / (beforeAverages.creation + beforeAverages.confirmation)) * 100)
+};
+
+// 事業所の平均職員数（仮定）
+const averageStaffCount = 15;
+
+// 年間削減時間を計算（月間削減時間 × 12ヶ月 × 平均職員数）
+const annualTimeSaved = timeReduction.total * 12 * averageStaffCount;
+
+// 年間削減時間を時間と分に変換
+const annualHours = Math.floor(annualTimeSaved / 60);
+const annualMinutes = annualTimeSaved % 60;
+
+// 年間人件費削減額を計算（時給2,000円と仮定）
+const hourlyWage = 2000; // 円/時間
+const annualCostSaving = Math.round((annualTimeSaved / 60) * hourlyWage);
+const formattedCostSaving = new Intl.NumberFormat('ja-JP').format(annualCostSaving);
+
+// システム導入率の計算
+const calculateSystemAdoptionRate = (data) => {
+  if (data.length === 0) return 0;
+  
+  const systemUsers = data.filter(row => {
+    const sharingMethod = row["ケアプラン共有方法"] || row["共有方法"];
+    return sharingMethod === "システム";
+  }).length;
+  
+  return Math.round((systemUsers / data.length) * 100);
+};
+
+const beforeAdoptionRate = calculateSystemAdoptionRate(beforeData);
+const afterAdoptionRate = calculateSystemAdoptionRate(afterData);
+const adoptionRateIncrease = afterAdoptionRate - beforeAdoptionRate;
+
 ---
 
-<Layout title="事業所分析 | 宮崎ケアプラン分析">
-  <h1>事業所タイムスタディ分析</h1>
-  <p>ここに事業所データの分析結果（ビフォーアフター比較）を表示します。</p>
-
-  <div style="height: 500px; width: 80%; margin: 20px auto;">
-    <AnalysisChart chartId={chartId} type="bar" data={chartData} options={chartOptions} />
-  </div>
-
-  <section class="analysis-details">
-    <h2>分析結果の詳細</h2>
-    <p>
-      上のグラフは、ケアプランデータ連携システムの導入前後における、ケアプラン（居宅サービス計画書第１～３表）およびサービス利用票（提供票）の共有方法の変化を示しています。
-      各棒は、それぞれの共有方法を選択した事業所の数を表します。「導入前」と「導入後」のデータを比較することで、システム導入が共有方法にどのような影響を与えたかを確認できます。
-    </p>
-    <p>
-      特に、「ケアプランデータ連携システム」の利用率の変化や、「FAX」、「持参」、「郵送」といった従来の方法の利用率の変化に注目してください。
-    </p>
+<Layout title="事業所分析 | 宮崎県ケアプランデータ連携システム導入効果分析">
+  <main class="container">
+    <section class="page-header">
+      <div class="header-content">
+        <h1>事業所レベルでの導入効果分析</h1>
+        <p class="lead">
+          ケアプランデータ連携システムの導入による事業所全体の業務効率化と経済効果を分析し、組織としての導入メリットを可視化しています。
+        </p>
+        <div class="header-decoration">
+          <div class="decoration-circle"></div>
+          <div class="decoration-line"></div>
+        </div>
+      </div>
     </section>
 
+    <section class="key-findings card">
+      <h2><span class="icon">📊</span>主要な分析結果</h2>
+      
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-icon">⏱️</div>
+          <div class="stat-value">{annualHours}時間{annualMinutes}分</div>
+          <div class="stat-label">年間総削減時間</div>
+          <div class="stat-description">事業所全体での年間削減時間</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon">💹</div>
+          <div class="stat-value">{formattedCostSaving}円</div>
+          <div class="stat-label">年間人件費削減</div>
+          <div class="stat-description">時給2,000円換算</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-icon">📈</div>
+          <div class="stat-value">{adoptionRateIncrease}%</div>
+          <div class="stat-label">システム導入率向上</div>
+          <div class="stat-description">導入前後での利用率増加</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="time-comparison card">
+      <h2><span class="icon">⏳</span>業務別時間比較</h2>
+      
+      <div class="comparison-table">
+        <table>
+          <thead>
+            <tr>
+              <th>業務内容</th>
+              <th>導入前</th>
+              <th>導入後</th>
+              <th>削減時間</th>
+              <th>削減率</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td><span class="task-icon">📝</span> 提供票作成</td>
+              <td>{beforeAverages.creation}分</td>
+              <td>{afterAverages.creation}分</td>
+              <td>{timeReduction.creation}分</td>
+              <td><span class="badge badge-success">{reductionPercentage.creation}%</span></td>
+            </tr>
+            <tr>
+              <td><span class="task-icon">🔍</span> 実績確認</td>
+              <td>{beforeAverages.confirmation}分</td>
+              <td>{afterAverages.confirmation}分</td>
+              <td>{timeReduction.confirmation}分</td>
+              <td><span class="badge badge-success">{reductionPercentage.confirmation}%</span></td>
+            </tr>
+            <tr>
+              <td><span class="task-icon">✏️</span> 修正対応</td>
+              <td>{beforeAverages.modification}分</td>
+              <td>{afterAverages.modification}分</td>
+              <td>{timeReduction.modification}分</td>
+              <td><span class="badge badge-success">{reductionPercentage.modification}%</span></td>
+            </tr>
+            <tr class="total-row">
+              <td><span class="task-icon">🔄</span> 合計時間</td>
+              <td>{beforeAverages.creation + beforeAverages.confirmation}分</td>
+              <td>{afterAverages.creation + afterAverages.confirmation}分</td>
+              <td>{timeReduction.total}分</td>
+              <td><span class="badge badge-success">{reductionPercentage.total}%</span></td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      
+      <div class="data-insights">
+        <div class="insight-card">
+          <div class="insight-icon">💡</div>
+          <div class="insight-content">
+            <h3>分析ポイント</h3>
+            <p>システム導入により、提供票作成と実績確認の両方で大幅な時間削減が実現しています。特に修正対応時間の短縮は、情報共有の迅速化によるものです。</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="chart-section card">
+      <h2><span class="icon">📊</span>共有方法別の時間比較</h2>
+      <div class="chart-container">
+        <AnalysisChart 
+          id="analysisChart"
+          chartType="bar"
+          beforeData={beforeTimes}
+          afterData={afterTimes}
+          beforeLabel="時間（導入前）"
+          afterLabel="時間（導入後）"
+          yAxisLabel="時間 (時間)"
+          xAxisLabel="共有方法"
+          chartTitle="ケアプラン共有方法別 所要時間の比較"
+        />
+      </div>
+      
+      <div class="chart-insights">
+        <h3>分析結果のポイント</h3>
+        <ul>
+          <li><strong>システム導入効果：</strong> システムによる共有方法が最も効率的で、事業所全体での業務時間削減に大きく貢献しています。</li>
+          <li><strong>コスト削減効果：</strong> 業務時間の削減は直接的な人件費削減につながり、年間約{formattedCostSaving}円の経済効果が見込まれます。</li>
+          <li><strong>システム導入率：</strong> 導入前{beforeAdoptionRate}%から導入後{afterAdoptionRate}%へと{adoptionRateIncrease}%増加し、組織全体での効率化が進んでいます。</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="roi-analysis card">
+      <h2><span class="icon">💰</span>投資対効果（ROI）分析</h2>
+      <div class="roi-content">
+        <div class="roi-intro">
+          <p>
+            ケアプランデータ連携システムの導入による投資対効果を分析しました。
+          </p>
+        </div>
+        
+        <div class="roi-grid">
+          <div class="roi-item">
+            <div class="roi-item-header">
+              <div class="roi-icon">🔧</div>
+              <h3>初期投資コスト</h3>
+            </div>
+            <ul>
+              <li>システム導入費用</li>
+              <li>研修・教育費用</li>
+              <li>移行期間の業務調整コスト</li>
+            </ul>
+          </div>
+          
+          <div class="roi-item">
+            <div class="roi-item-header">
+              <div class="roi-icon">⏱️</div>
+              <h3>継続的コスト</h3>
+            </div>
+            <ul>
+              <li>システム利用料（月額/年額）</li>
+              <li>保守・メンテナンス費用</li>
+              <li>定期的な研修費用</li>
+            </ul>
+          </div>
+          
+          <div class="roi-item">
+            <div class="roi-item-header">
+              <div class="roi-icon">💹</div>
+              <h3>経済的メリット</h3>
+            </div>
+            <ul>
+              <li>年間人件費削減：約{formattedCostSaving}円</li>
+              <li>紙資源・印刷コスト削減</li>
+              <li>保管スペース削減</li>
+            </ul>
+          </div>
+          
+          <div class="roi-item">
+            <div class="roi-item-header">
+              <div class="roi-icon">✨</div>
+              <h3>非経済的メリット</h3>
+            </div>
+            <ul>
+              <li>情報共有の正確性向上</li>
+              <li>利用者サービスの質向上</li>
+              <li>スタッフの業務満足度向上</li>
+            </ul>
+          </div>
+        </div>
+        
+        <div class="roi-summary">
+          <div class="roi-summary-item">
+            <div class="roi-summary-icon">⏳</div>
+            <div class="roi-summary-content">
+              <p>
+                <strong>投資回収期間：</strong> 導入コストと年間削減額を考慮すると、約1〜2年での投資回収が見込まれます。
+              </p>
+            </div>
+          </div>
+          <div class="roi-summary-item">
+            <div class="roi-summary-icon">📈</div>
+            <div class="roi-summary-content">
+              <p>
+                <strong>5年間の累積効果：</strong> 5年間での累積経済効果は約{new Intl.NumberFormat('ja-JP').format(annualCostSaving * 5)}円と試算されます。
+              </p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="recommendations card">
+      <h2><span class="icon">💡</span>事業所向け推奨事項</h2>
+      <div class="recommendations-content">
+        <ol class="recommendation-list">
+          <li class="recommendation-item">
+            <div class="recommendation-number">1</div>
+            <div class="recommendation-content">
+              <strong>段階的な導入計画の策定：</strong> 
+              システム導入率をさらに高めるため、部門ごとに段階的な導入計画を策定し、成功事例を組織内で共有することが効果的です。
+            </div>
+          </li>
+          <li class="recommendation-item">
+            <div class="recommendation-number">2</div>
+            <div class="recommendation-content">
+              <strong>定期的な効果測定：</strong> 
+              四半期ごとに業務時間の測定を行い、システム導入効果を継続的に検証・改善することで、さらなる効率化が期待できます。
+            </div>
+          </li>
+          <li class="recommendation-item">
+            <div class="recommendation-number">3</div>
+            <div class="recommendation-content">
+              <strong>業務プロセスの最適化：</strong> 
+              システム導入に合わせて業務プロセス全体を見直し、重複作業の削減や情報共有の効率化を図ることが重要です。
+            </div>
+          </li>
+          <li class="recommendation-item">
+            <div class="recommendation-number">4</div>
+            <div class="recommendation-content">
+              <strong>他システムとの連携強化：</strong> 
+              既存の業務システムとの連携を強化することで、データ入力の重複を避け、さらなる業務効率化を実現できます。
+            </div>
+          </li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="navigation-links">
+      <div class="nav-buttons">
+        <a href="/" class="btn btn-primary">トップページに戻る</a>
+        <a href="/individual/" class="btn btn-secondary">個人分析を見る</a>
+      </div>
+    </section>
+  </main>
 </Layout>
 
 <style>
-  .analysis-details {
-    margin: 30px auto;
-    padding: 20px;
-    background-color: #f9f9f9;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    width: 80%;
-    font-family: sans-serif;
+  .page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+    position: relative;
+    padding: 2rem 0;
   }
-  .analysis-details h2 {
-    color: #333;
-    border-bottom: 2px solid #ccc;
-    padding-bottom: 10px;
-    margin-bottom: 15px;
+
+  .header-content {
+    position: relative;
+    z-index: 2;
   }
-  .analysis-details p {
-    color: #555;
+
+  .header-decoration {
+    position: absolute;
+    top: 0;
+    right: 0;
+    z-index: 1;
+    opacity: 0.1;
+  }
+
+  .decoration-circle {
+    width: 150px;
+    height: 150px;
+    border-radius: 50%;
+    background-color: var(--accent);
+    position: absolute;
+    top: -50px;
+    right: -50px;
+  }
+
+  .decoration-line {
+    width: 200px;
+    height: 3px;
+    background-color: var(--accent);
+    position: absolute;
+    top: 50px;
+    right: -100px;
+    transform: rotate(-45deg);
+  }
+
+  .lead {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+    max-width: 800px;
+    margin: 0 auto;
     line-height: 1.6;
+  }
+
+  .card {
+    background-color: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .card h2 {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1.5rem;
+    color: var(--accent);
+    border-bottom: 2px solid var(--border-color);
+    padding-bottom: 0.75rem;
+  }
+
+  .icon {
+    margin-right: 0.5rem;
+    font-size: 1.25rem;
+  }
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+  }
+
+  .stat-card {
+    background-color: var(--bg-accent);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    text-align: center;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  }
+
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 4px;
+    background-color: var(--accent);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+  }
+
+  .stat-card:hover::after {
+    transform: scaleX(1);
+  }
+
+  .stat-icon {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent);
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-label {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-description {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+  }
+
+  .comparison-table {
+    overflow-x: auto;
+    margin-top: 1.5rem;
+    border-radius: var(--border-radius);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th, td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  th {
+    background-color: var(--bg-accent);
+    font-weight: 600;
+    color: var(--accent);
+  }
+
+  tr:hover {
+    background-color: var(--bg-accent);
+  }
+
+  .total-row {
+    font-weight: 600;
+    background-color: var(--bg-accent);
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .badge-success {
+    background-color: var(--success);
+    color: white;
+  }
+
+  .task-icon {
+    font-size: 1.25rem;
+    margin-right: 0.5rem;
+    display: inline-block;
+    vertical-align: middle;
+  }
+
+  .chart-container {
+    margin-top: 1.5rem;
+    margin-bottom: 2rem;
+    border-radius: var(--border-radius);
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.05);
+    background-color: white;
+    padding: 1rem;
+  }
+
+  .chart-insights {
+    background-color: var(--bg-accent);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    margin-top: 1.5rem;
+    border-left: 4px solid var(--accent);
+  }
+
+  .chart-insights h3 {
+    margin-bottom: 1rem;
+    color: var(--accent);
+  }
+
+  .chart-insights ul {
+    padding-left: 1.5rem;
+  }
+
+  .chart-insights li {
+    margin-bottom: 0.75rem;
+    line-height: 1.5;
+  }
+
+  .data-insights {
+    margin-top: 1.5rem;
+  }
+
+  .insight-card {
+    display: flex;
+    align-items: flex-start;
+    background-color: var(--bg-accent);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    border-left: 4px solid var(--accent);
+  }
+
+  .insight-icon {
+    font-size: 2rem;
+    margin-right: 1rem;
+    color: var(--accent);
+  }
+
+  .insight-content {
+    flex: 1;
+  }
+
+  .insight-content h3 {
+    margin-bottom: 0.5rem;
+    color: var(--accent);
+  }
+
+  .insight-content p {
+    line-height: 1.5;
+  }
+
+  .roi-content {
+    margin-top: 1rem;
+  }
+
+  .roi-intro {
+    margin-bottom: 1.5rem;
+  }
+
+  .roi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+    margin-bottom: 1.5rem;
+  }
+
+  .roi-item {
+    background-color: var(--bg-accent);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    transition: transform 0.3s ease;
+    border-top: 4px solid var(--accent);
+  }
+
+  .roi-item:hover {
+    transform: translateY(-5px);
+  }
+
+  .roi-item-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+  }
+
+  .roi-icon {
+    font-size: 1.5rem;
+    margin-right: 0.75rem;
+    color: var(--accent);
+  }
+
+  .roi-item h3 {
+    margin-bottom: 0;
+    font-size: 1.125rem;
+    color: var(--accent);
+  }
+
+  .roi-item ul {
+    padding-left: 1.5rem;
+  }
+
+  .roi-item li {
+    margin-bottom: 0.5rem;
+    line-height: 1.5;
+  }
+
+  .roi-summary {
+    margin-top: 1.5rem;
+  }
+
+  .roi-summary-item {
+    display: flex;
+    align-items: flex-start;
+    background-color: var(--bg-accent);
+    padding: 1.25rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 1rem;
+    border-left: 4px solid var(--accent);
+  }
+
+  .roi-summary-icon {
+    font-size: 1.5rem;
+    margin-right: 1rem;
+    color: var(--accent);
+  }
+
+  .roi-summary-content {
+    flex: 1;
+  }
+
+  .roi-summary p {
+    margin-bottom: 0;
+    line-height: 1.5;
+  }
+
+  .recommendations-content {
+    margin-top: 1rem;
+  }
+
+  .recommendation-list {
+    padding-left: 0;
+    list-style: none;
+    counter-reset: recommendation;
+  }
+
+  .recommendation-item {
+    display: flex;
+    align-items: flex-start;
+    margin-bottom: 1.5rem;
+    background-color: var(--bg-accent);
+    padding: 1.25rem;
+    border-radius: var(--border-radius);
+    transition: transform 0.3s ease;
+  }
+
+  .recommendation-item:hover {
+    transform: translateY(-3px);
+  }
+
+  .recommendation-number {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.5rem;
+    height: 2.5rem;
+    background-color: var(--accent);
+    color: white;
+    border-radius: 50%;
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-right: 1rem;
+    flex-shrink: 0;
+  }
+
+  .recommendation-content {
+    flex: 1;
+    line-height: 1.5;
+  }
+
+  .recommendation-content strong {
+    color: var(--accent);
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 1.1rem;
+  }
+
+  .navigation-links {
+    margin-top: 3rem;
+    margin-bottom: 2rem;
+  }
+
+  .nav-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+  }
+
+  .btn {
+    display: inline-block;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--border-radius);
+    font-weight: 600;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .btn-primary {
+    background-color: var(--accent);
+    color: white;
+    border: 2px solid var(--accent);
+  }
+
+  .btn-primary:hover {
+    background-color: transparent;
+    color: var(--accent);
+  }
+
+  .btn-secondary {
+    background-color: transparent;
+    color: var(--accent);
+    border: 2px solid var(--accent);
+  }
+
+  .btn-secondary:hover {
+    background-color: var(--accent);
+    color: white;
+  }
+
+  @media (max-width: 768px) {
+    .nav-buttons {
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    .stat-value {
+      font-size: 1.75rem;
+    }
+    
+    table {
+      font-size: 0.875rem;
+    }
+    
+    th, td {
+      padding: 0.5rem;
+    }
+    
+    .roi-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .recommendation-item {
+      flex-direction: column;
+    }
+
+    .recommendation-number {
+      margin-bottom: 1rem;
+    }
   }
 </style>

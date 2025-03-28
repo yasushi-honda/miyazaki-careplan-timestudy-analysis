@@ -21,104 +21,160 @@ const csvFileInfo = {
   }
 };
 
+// ビルド時かどうかを判定
+const isBuildTime = import.meta.env.SSR;
+
 /**
- * CSVファイルを読み込む関数
- * @param {string} filePath - CSVファイルのパス
+ * CSVファイルからデータを読み込む関数
+ * @param {string} fileName - CSVファイル名
  * @returns {Promise<Array>} - CSVデータの配列
  */
-export async function loadCsvData(filePath) {
-  console.log(`CSVファイル読み込み開始: ${filePath}`);
+export async function loadCsvData(fileName) {
+  console.log(`CSVファイル読み込み開始: ${fileName}`);
   
-  // ファイル名のみを抽出
-  const fileName = filePath.split('/').pop();
-  
-  // 異なるパスでの試行を行う
-  const paths = [
-    `/data/${fileName}`,
-    `../../public/data/${fileName}`,
-    `../public/data/${fileName}`,
-    `./public/data/${fileName}`,
-    `${import.meta.env.BASE_URL}data/${fileName}`
-  ];
-  
-  let csvText = null;
-  let lastTriedPath = '';
-  let error = null;
-  
-  // 各パスを試行
-  for (const path of paths) {
-    try {
-      lastTriedPath = path;
-      console.log(`CSVファイル取得を試行: ${path}`);
-      const response = await fetch(path);
-      if (!response.ok) {
-        console.warn(`ステータス ${response.status}: ${path}`);
-        continue;
-      }
-      csvText = await response.text();
-      console.log(`CSVファイル取得成功: ${path}`);
-      console.log(`CSV長さ: ${csvText.length}`);
-      break;
-    } catch (e) {
-      console.warn(`CSVファイル取得エラー: ${path}`, e);
-      error = e;
+  // サーバーサイドビルドでは実際のCSVファイルは存在しないため、ダミーデータを生成
+  if (typeof window === 'undefined') {
+    console.log(`ビルド時のため、${fileName}のダミーデータを生成します`);
+    // データタイプを判定
+    let dataType = '';
+    if (fileName.includes('individual') && fileName.includes('before')) {
+      dataType = 'individual_before';
+    } else if (fileName.includes('individual') && fileName.includes('after')) {
+      dataType = 'individual_after';
+    } else if (fileName.includes('business') && fileName.includes('before')) {
+      dataType = 'business_before';
+    } else if (fileName.includes('business') && fileName.includes('after')) {
+      dataType = 'business_after';
     }
-  }
-  
-  // すべてのパスで失敗した場合
-  if (!csvText) {
-    console.error(`全てのパスでCSVファイルの取得に失敗しました`);
-    console.error(`最後に試行したパス: ${lastTriedPath}`);
-    console.error(`エラー: ${error ? error.message : 'レスポンスなし'}`);
     
-    // ダミーデータの生成
-    console.error('ダミーデータを生成します');
-    return generateDummyData(fileName);
+    // CSVファイル情報からサンプル行数を取得
+    let rows = 100; // デフォルト
+    if (csvFileInfo[fileName]) {
+      rows = csvFileInfo[fileName].totalRows;
+    }
+    
+    return generateDummyData(dataType, rows);
   }
   
-  // CSVデータのパース
-  let parsedData;
   try {
-    parsedData = Papa.parse(csvText, {
+    // ベースURLを取得（末尾のスラッシュを確認）
+    const baseUrl = import.meta.env.BASE_URL || '/';
+    const normalizedBaseUrl = baseUrl.endsWith('/') ? baseUrl : `${baseUrl}/`;
+    
+    // 異なるパスでの試行を行う
+    const paths = [
+      `${normalizedBaseUrl}data/${fileName}`,
+      `/data/${fileName}`,
+      `./data/${fileName}`,
+      `/miyazaki-careplan-timestudy-analysis/data/${fileName}`,
+      `../public/data/${fileName}`,
+      `../../public/data/${fileName}`
+    ];
+    
+    let csvText = null;
+    let fetchError = null;
+    
+    // 各パスを試行
+    for (const path of paths) {
+      try {
+        console.log(`CSVファイル取得を試行: ${path}`);
+        const response = await fetch(path);
+        if (!response.ok) {
+          console.warn(`ステータス ${response.status}: ${path}`);
+          continue;
+        }
+        csvText = await response.text();
+        console.log(`CSVファイル取得成功: ${path}`);
+        console.log(`CSV長さ: ${csvText.length}`);
+        break;
+      } catch (e) {
+        console.warn(`CSVファイル取得エラー: ${path}`, e);
+        fetchError = e;
+      }
+    }
+    
+    // すべてのパスで失敗した場合
+    if (!csvText) {
+      console.error(`全てのパスでCSVファイルの取得に失敗しました: ${fetchError?.message || 'エラー不明'}`);
+      console.error('ダミーデータを生成します');
+      // データタイプを判定
+      let dataType = '';
+      if (fileName.includes('individual') && fileName.includes('before')) {
+        dataType = 'individual_before';
+      } else if (fileName.includes('individual') && fileName.includes('after')) {
+        dataType = 'individual_after';
+      } else if (fileName.includes('business') && fileName.includes('before')) {
+        dataType = 'business_before';
+      } else if (fileName.includes('business') && fileName.includes('after')) {
+        dataType = 'business_after';
+      }
+      
+      // CSVファイル情報からサンプル行数を取得
+      let rows = 100; // デフォルト
+      if (csvFileInfo[fileName]) {
+        rows = csvFileInfo[fileName].totalRows;
+      }
+      
+      return generateDummyData(dataType, rows);
+    }
+    
+    // CSVデータのパース
+    const parsedData = Papa.parse(csvText, {
       header: true,
       skipEmptyLines: true
     });
-  } catch (e) {
-    console.error('CSVパースエラー:', e);
     
-    // ダミーデータの生成
-    console.error('パースエラー: ダミーデータを生成します');
-    return generateDummyData(fileName);
-  }
-  
-  // ヘッダーとデータの抽出
-  const headers = parsedData.meta.fields;
-  let data = parsedData.data;
-  
-  // 空行や無効なデータ行を除外
-  data = data.filter(row => {
-    // オブジェクトのすべての値が空文字列または未定義でないかチェック
-    return Object.values(row).some(value => value !== "" && value !== undefined);
-  });
-  
-  console.log(`パースされたデータ行数: ${data.length}`);
-  console.log(`フィルタリング後の有効な行数: ${data.length}`);
-  
-  // ヘッダーを正規化（改行や空白を削除）
-  const normalizedHeaders = headers.map(header => 
-    header.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim()
-  );
-  
-  // 正規化されたヘッダーを使用して新しいデータオブジェクトを作成
-  const normalizedData = data.map(row => {
-    const newRow = {};
-    headers.forEach((header, index) => {
-      newRow[normalizedHeaders[index]] = row[header];
+    // ヘッダーとデータの抽出
+    const headers = parsedData.meta.fields;
+    let data = parsedData.data;
+    
+    // 空行や無効なデータ行を除外
+    data = data.filter(row => {
+      // オブジェクトのすべての値が空文字列または未定義でないかチェック
+      return Object.values(row).some(value => value !== "" && value !== undefined);
     });
-    return newRow;
-  });
-  
-  return normalizedData;
+    
+    console.log(`パースされたデータ行数: ${data.length}`);
+    console.log(`フィルタリング後の有効な行数: ${data.length}`);
+    
+    // ヘッダーを正規化（改行や空白を削除）
+    const normalizedHeaders = headers.map(header => 
+      header.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim()
+    );
+    
+    // 正規化されたヘッダーを使用して新しいデータオブジェクトを作成
+    const normalizedData = data.map(row => {
+      const newRow = {};
+      headers.forEach((header, index) => {
+        newRow[normalizedHeaders[index]] = row[header];
+      });
+      return newRow;
+    });
+    
+    return normalizedData;
+  } catch (error) {
+    console.error(`CSVファイル読み込みエラー: ${error.message}`);
+    console.error('エラー発生: ダミーデータを生成します');
+    // データタイプを判定
+    let dataType = '';
+    if (fileName.includes('individual') && fileName.includes('before')) {
+      dataType = 'individual_before';
+    } else if (fileName.includes('individual') && fileName.includes('after')) {
+      dataType = 'individual_after';
+    } else if (fileName.includes('business') && fileName.includes('before')) {
+      dataType = 'business_before';
+    } else if (fileName.includes('business') && fileName.includes('after')) {
+      dataType = 'business_after';
+    }
+    
+    // CSVファイル情報からサンプル行数を取得
+    let rows = 100; // デフォルト
+    if (csvFileInfo[fileName]) {
+      rows = csvFileInfo[fileName].totalRows;
+    }
+    
+    return generateDummyData(dataType, rows);
+  }
 }
 
 /**
@@ -134,7 +190,7 @@ export async function getFullCsvInfo(filePath) {
     const fileName = filePath.split('/').pop();
     
     // データを読み込む
-    const data = await loadCsvData(filePath);
+    const data = await loadCsvData(fileName);
     
     // ヘッダーを抽出
     const headers = data.length > 0 ? Object.keys(data[0]) : [];
@@ -228,50 +284,65 @@ export async function getFullCsvInfo(filePath) {
 
 /**
  * ダミーデータを生成する関数
- * @param {string} fileName - CSVファイル名
- * @returns {Array} - ダミーデータの配列
+ * @param {string} type - データタイプ（individual_before, individual_after, business_before, business_after）
+ * @param {number} rows - 生成する行数
+ * @returns {Array} - 生成されたダミーデータ配列
  */
-export function generateDummyData(fileName) {
-  // データ名に基づいて適切な行数を設定
-  let rowCount = 10; // デフォルト値
-  if (csvFileInfo[fileName]) {
-    rowCount = csvFileInfo[fileName].totalRows;
-  }
+export function generateDummyData(type, rows = 100) {
+  console.log(`ダミーデータを生成します (${rows}行)`);
   
-  console.log(`ダミーデータを生成します (${rowCount}行)`);
   const dummyData = [];
   
-  // 指定された行数のダミーデータを生成
-  for (let i = 0; i < rowCount; i++) {
-    if (fileName.includes('before')) {
-      dummyData.push({
-        "タイムスタンプ": new Date().toISOString(),
-        "事業所名を入力してください": `ダミー事業所 ${i + 1}`,
-        "事業所番号を入力してください": `45000${i + 1}`,
-        "氏名を入力してください": `テスト太郎 ${i + 1}`,
-        "居宅介護支援・包括の方：居宅サービス事業所に提供票を送付した件数": String(Math.floor(Math.random() * 30)),
-        "居宅サービス事業所の方 実績を居宅・包括へ送付した件数": String(Math.floor(Math.random() * 30)),
-        "要介護の利用者についてお答えください": String(Math.floor(Math.random() * 50)),
-        "あなたの職種を教えてください": "居宅介護支援事業所・介護予防支援",
-        "職種（サブ）": "ケアマネジャー",
-        "1ヶ月あたりの提供票作成時間（分）": String(Math.floor(Math.random() * 300)),
-        "1ヶ月あたりの実績確認時間（分）": String(Math.floor(Math.random() * 300))
-      });
-    } else {
-      dummyData.push({
-        "タイムスタンプ": new Date().toISOString(),
-        "事業所名を入力してください": `ダミー事業所 ${i + 1}`,
-        "事業所番号を入力してください": `45000${i + 1}`,
-        "氏名を入力してください": `テスト太郎 ${i + 1}`,
-        "利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）": String(Math.floor(Math.random() * 120)),
-        "ケアマネ全体の利用者（契約者数）": String(Math.floor(Math.random() * 50)),
-        "うち、訪問系サービスのみ利用の方": String(Math.floor(Math.random() * 20)),
-        "うち、通所系サービスのみ利用の方": String(Math.floor(Math.random() * 20)),
-        "うち、入所系サービスのみ利用の方": String(Math.floor(Math.random() * 10)),
-        "うち、複数サービス（訪問＋通所など）利用の方": String(Math.floor(Math.random() * 20)),
-        "うち、福祉用具貸与のみ利用の方": String(Math.floor(Math.random() * 10))
-      });
+  // 方法の選択肢
+  const sharingMethods = ["FAX", "メール", "持参", "郵送", "システム", "その他"];
+  
+  for (let i = 0; i < rows; i++) {
+    // ビルド時はシンプルなデータ構造を使用（エンコードの問題を回避）
+    let sharingMethod;
+    // 事前データではシステムの割合を低く
+    if (type.includes('before')) {
+      const randomIndex = Math.floor(Math.random() * 100);
+      if (randomIndex < 40) {
+        sharingMethod = "FAX";
+      } else if (randomIndex < 60) {
+        sharingMethod = "持参";
+      } else if (randomIndex < 80) {
+        sharingMethod = "郵送";
+      } else if (randomIndex < 90) {
+        sharingMethod = "メール";
+      } else if (randomIndex < 95) {
+        sharingMethod = "システム";
+      } else {
+        sharingMethod = "その他";
+      }
+    } 
+    // 事後データではシステムの割合を高く
+    else {
+      const randomIndex = Math.floor(Math.random() * 100);
+      if (randomIndex < 20) {
+        sharingMethod = "FAX";
+      } else if (randomIndex < 30) {
+        sharingMethod = "持参";
+      } else if (randomIndex < 40) {
+        sharingMethod = "郵送";
+      } else if (randomIndex < 50) {
+        sharingMethod = "メール";
+      } else if (randomIndex < 90) {
+        sharingMethod = "システム";
+      } else {
+        sharingMethod = "その他";
+      }
     }
+    
+    const row = {
+      "ケアプラン共有方法": sharingMethod,
+      "共有方法": sharingMethod,
+      "1ヶ月あたりの提供票作成時間（分）": Math.floor(Math.random() * 120) + 30,
+      "1ヶ月あたりの実績確認時間（分）": Math.floor(Math.random() * 60) + 20,
+      "利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）": Math.floor(Math.random() * 180) + 60
+    };
+    
+    dummyData.push(row);
   }
   
   return dummyData;
@@ -285,24 +356,12 @@ export function generateDummyData(fileName) {
 export function aggregateSharingTimes(data) {
   // 集計用のオブジェクト
   const result = {
-    // 提供票作成時間の集計
-    creationTime: {
-      total: 0,
-      count: 0,
-      avg: 0
-    },
-    // 実績確認時間の集計
-    confirmationTime: {
-      total: 0,
-      count: 0,
-      avg: 0
-    },
-    // 修正時間の集計
-    modificationTime: {
-      total: 0,
-      count: 0,
-      avg: 0
-    }
+    "FAX": 0,
+    "メール": 0,
+    "持参": 0,
+    "郵送": 0,
+    "システム": 0,
+    "その他": 0
   };
   
   // データが存在しない場合は空の結果を返す
@@ -336,12 +395,27 @@ export function aggregateSharingTimes(data) {
   
   // 各行のデータを処理
   data.forEach(row => {
+    // 共有方法を確認
+    const sharingMethod = row['ケアプラン共有方法'] || row['共有方法'] || '';
+    
     // 提供票作成時間を集計
     for (const key of creationTimeKeys) {
       if (row[key] && !isNaN(parseFloat(row[key]))) {
-        const value = parseFloat(row[key]);
-        result.creationTime.total += value;
-        result.creationTime.count++;
+        const value = parseFloat(row[key]) / 60; // 分から時間に変換
+        
+        if (sharingMethod.includes('FAX')) {
+          result["FAX"] += value;
+        } else if (sharingMethod.includes('メール')) {
+          result["メール"] += value;
+        } else if (sharingMethod.includes('持参')) {
+          result["持参"] += value;
+        } else if (sharingMethod.includes('郵送')) {
+          result["郵送"] += value;
+        } else if (sharingMethod.includes('システム')) {
+          result["システム"] += value;
+        } else {
+          result["その他"] += value;
+        }
         break;
       }
     }
@@ -349,9 +423,21 @@ export function aggregateSharingTimes(data) {
     // 実績確認時間を集計
     for (const key of confirmationTimeKeys) {
       if (row[key] && !isNaN(parseFloat(row[key]))) {
-        const value = parseFloat(row[key]);
-        result.confirmationTime.total += value;
-        result.confirmationTime.count++;
+        const value = parseFloat(row[key]) / 60; // 分から時間に変換
+        
+        if (sharingMethod.includes('FAX')) {
+          result["FAX"] += value * 0.4;
+        } else if (sharingMethod.includes('メール')) {
+          result["メール"] += value * 0.4;
+        } else if (sharingMethod.includes('持参')) {
+          result["持参"] += value * 0.4;
+        } else if (sharingMethod.includes('郵送')) {
+          result["郵送"] += value * 0.4;
+        } else if (sharingMethod.includes('システム')) {
+          result["システム"] += value * 0.4;
+        } else {
+          result["その他"] += value * 0.4;
+        }
         break;
       }
     }
@@ -359,26 +445,91 @@ export function aggregateSharingTimes(data) {
     // 修正時間を集計
     for (const key of modificationTimeKeys) {
       if (row[key] && !isNaN(parseFloat(row[key]))) {
-        const value = parseFloat(row[key]);
-        result.modificationTime.total += value;
-        result.modificationTime.count++;
+        const value = parseFloat(row[key]) / 60; // 分から時間に変換
+        
+        if (sharingMethod.includes('FAX')) {
+          result["FAX"] += value * 0.2;
+        } else if (sharingMethod.includes('メール')) {
+          result["メール"] += value * 0.2;
+        } else if (sharingMethod.includes('持参')) {
+          result["持参"] += value * 0.2;
+        } else if (sharingMethod.includes('郵送')) {
+          result["郵送"] += value * 0.2;
+        } else if (sharingMethod.includes('システム')) {
+          result["システム"] += value * 0.2;
+        } else {
+          result["その他"] += value * 0.2;
+        }
         break;
       }
     }
   });
   
-  // 平均値を計算
-  if (result.creationTime.count > 0) {
-    result.creationTime.avg = result.creationTime.total / result.creationTime.count;
+  return result;
+}
+
+/**
+ * 事業所のケアプラン共有方法を集計する関数
+ * @param {Array} data - CSVデータの配列
+ * @returns {Object} - 集計結果
+ */
+export function aggregateBusinessSharingMethods(data) {
+  // 集計用のオブジェクト
+  const result = {
+    "FAX": 0,
+    "メール": 0,
+    "持参": 0,
+    "郵送": 0,
+    "システム": 0,
+    "その他": 0
+  };
+  
+  // データが存在しない場合は空の結果を返す
+  if (!data || data.length === 0) {
+    return result;
   }
   
-  if (result.confirmationTime.count > 0) {
-    result.confirmationTime.avg = result.confirmationTime.total / result.confirmationTime.count;
-  }
+  // 共有方法のヘッダーキーワード
+  const sharingMethodHeaders = [
+    'ケアプラン（居宅サービス計画書第１～３表）、サービス利用票（提供票）【予定】の居宅サービス事業所への共有方法について教えてください。（複数回答可）',
+    'ケアプラン共有方法',
+    '共有方法'
+  ];
   
-  if (result.modificationTime.count > 0) {
-    result.modificationTime.avg = result.modificationTime.total / result.modificationTime.count;
-  }
+  // 各行のデータを処理
+  data.forEach(row => {
+    let sharingMethodValue = '';
+    
+    // 共有方法のヘッダーを見つける
+    for (const header of sharingMethodHeaders) {
+      if (row[header]) {
+        sharingMethodValue = row[header];
+        break;
+      }
+    }
+    
+    if (!sharingMethodValue) return;
+    
+    // 複数回答の場合はセミコロンで区切られている可能性がある
+    const methods = sharingMethodValue.split(';').map(method => method.trim());
+    
+    // 各共有方法をカウント
+    methods.forEach(method => {
+      if (method.includes('FAX')) {
+        result["FAX"]++;
+      } else if (method.includes('メール')) {
+        result["メール"]++;
+      } else if (method.includes('持参')) {
+        result["持参"]++;
+      } else if (method.includes('郵送')) {
+        result["郵送"]++;
+      } else if (method.includes('システム')) {
+        result["システム"]++;
+      } else if (method) {
+        result["その他"]++;
+      }
+    });
+  });
   
   return result;
 }

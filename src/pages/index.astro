@@ -1,19 +1,736 @@
 ---
 import Layout from '../layouts/Layout.astro';
+import { getCsvData } from '../data/csvDataJson.js';
+
+// 個人データと事業所データの両方を読み込む
+const individualBeforeData = getCsvData('individual_before.csv');
+const individualAfterData = getCsvData('individual_after.csv');
+const businessBeforeData = getCsvData('business_before.csv');
+const businessAfterData = getCsvData('business_after.csv');
+
+// 主要な統計データを計算
+const calculateAverageTime = (data, key) => {
+  if (!data || data.length === 0) return 0;
+  const sum = data.reduce((acc, row) => acc + (parseInt(row[key]) || 0), 0);
+  return Math.round(sum / data.length);
+};
+
+// 個人データの平均時間
+const avgBeforeCreationTime = calculateAverageTime(individualBeforeData, "1ヶ月あたりの提供票作成時間（分）");
+const avgAfterCreationTime = calculateAverageTime(individualAfterData, "1ヶ月あたりの提供票作成時間（分）");
+const creationTimeReduction = avgBeforeCreationTime - avgAfterCreationTime;
+const creationTimeReductionPercent = Math.round((creationTimeReduction / avgBeforeCreationTime) * 100);
+
+const avgBeforeConfirmationTime = calculateAverageTime(individualBeforeData, "1ヶ月あたりの実績確認時間（分）");
+const avgAfterConfirmationTime = calculateAverageTime(individualAfterData, "1ヶ月あたりの実績確認時間（分）");
+const confirmationTimeReduction = avgBeforeConfirmationTime - avgAfterConfirmationTime;
+const confirmationTimeReductionPercent = Math.round((confirmationTimeReduction / avgBeforeConfirmationTime) * 100);
+
+const avgBeforeModificationTime = calculateAverageTime(individualBeforeData, "利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）");
+const avgAfterModificationTime = calculateAverageTime(individualAfterData, "利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）");
+const modificationTimeReduction = avgBeforeModificationTime - avgAfterModificationTime;
+const modificationTimeReductionPercent = Math.round((modificationTimeReduction / avgBeforeModificationTime) * 100);
+
+// システム利用率の計算
+const countSharingMethods = (data) => {
+  const counts = { "システム": 0, "その他": 0, "total": 0 };
+  
+  if (!data || data.length === 0) return counts;
+  
+  data.forEach(row => {
+    const method = row["ケアプラン共有方法"] || row["共有方法"];
+    if (method === "システム") {
+      counts["システム"]++;
+    } else {
+      counts["その他"]++;
+    }
+    counts["total"]++;
+  });
+  
+  return counts;
+};
+
+const beforeMethods = countSharingMethods(businessBeforeData);
+const afterMethods = countSharingMethods(businessAfterData);
+
+const beforeSystemPercent = Math.round((beforeMethods["システム"] / beforeMethods["total"]) * 100) || 0;
+const afterSystemPercent = Math.round((afterMethods["システム"] / afterMethods["total"]) * 100) || 0;
+const systemAdoptionIncrease = afterSystemPercent - beforeSystemPercent;
+
+// 総合的な時間削減効果（月間）
+const totalMonthlyTimeSaved = creationTimeReduction + confirmationTimeReduction;
+
 ---
 
-<Layout title="トップページ | 宮崎ケアプラン分析">
-	<h1>宮崎県ケアプランデータ連携システム導入支援<br/>タイムスタディ分析レポート</h1>
-	<p>
-		このサイトは、宮崎県におけるケアプランデータ連携システムの導入効果をタイムスタディ分析に基づき可視化したものです。
-		事業所および個人の業務時間が、システム導入前後でどのように変化したかを分析し、その結果をグラフで示します。
-	</p>
-  <p>
-    以下のリンクから、それぞれの分析結果をご覧ください。
-  </p>
-  <ul>
-    <li><a href="/business">事業所分析の結果を見る</a></li>
-    <li><a href="/individual">個人分析の結果を見る</a></li>
-    <li><a href="/csv-viewer">CSVデータの詳細を確認する</a></li>
-  </ul>
+<Layout title="宮崎県ケアプランデータ連携システム導入効果分析">
+  <main class="container">
+    <section class="hero">
+      <div class="hero-content">
+        <h1>宮崎県ケアプランデータ連携システム<br><span class="highlight">導入効果分析</span></h1>
+        <p class="lead">
+          ケアプランデータ連携システムの導入前後のタイムスタディ分析結果をもとに、業務効率化と時間削減効果を可視化しています。
+        </p>
+        <div class="hero-buttons">
+          <a href="/individual/" class="btn btn-primary">
+            <span class="btn-icon">👤</span>個人分析を見る
+          </a>
+          <a href="/business/" class="btn btn-secondary">
+            <span class="btn-icon">🏢</span>事業所分析を見る
+          </a>
+        </div>
+      </div>
+      <div class="hero-image">
+        <div class="hero-shape"></div>
+        <div class="hero-illustration">
+          <div class="illustration-icon">⏱️</div>
+          <div class="illustration-icon">📊</div>
+          <div class="illustration-icon">💼</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="summary-section">
+      <h2 class="section-title"><span class="section-icon">📈</span>導入効果サマリー</h2>
+      <div class="summary-stats">
+        <div class="stat-card">
+          <div class="stat-icon">⏱️</div>
+          <div class="stat-value">{totalMonthlyTimeSaved}分</div>
+          <div class="stat-label">月間時間削減</div>
+          <div class="stat-description">1人あたりの月間削減時間</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📱</div>
+          <div class="stat-value">{systemAdoptionIncrease}%</div>
+          <div class="stat-label">システム利用率向上</div>
+          <div class="stat-description">導入前{beforeSystemPercent}%→導入後{afterSystemPercent}%</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-icon">📝</div>
+          <div class="stat-value">{creationTimeReductionPercent}%</div>
+          <div class="stat-label">提供票作成時間削減</div>
+          <div class="stat-description">導入前{avgBeforeCreationTime}分→導入後{avgAfterCreationTime}分</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="benefits-section">
+      <h2 class="section-title"><span class="section-icon">💡</span>ケアプランデータ連携システム導入のメリット</h2>
+      <div class="benefits-grid">
+        <div class="benefit-card">
+          <div class="benefit-icon">⏱️</div>
+          <h3>業務時間の大幅削減</h3>
+          <p>提供票作成時間が<strong>{creationTimeReductionPercent}%</strong>、実績確認時間が<strong>{confirmationTimeReductionPercent}%</strong>削減されました。これにより、ケアマネージャーはより多くの時間を利用者との対話や質の高いケアプラン作成に充てることができます。</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">🔄</div>
+          <h3>修正対応の迅速化</h3>
+          <p>ケアプラン修正依頼から完了までの時間が<strong>{modificationTimeReductionPercent}%</strong>短縮されました。システム導入により、修正作業の効率化と迅速な対応が可能になりました。</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">📊</div>
+          <h3>データ連携の効率化</h3>
+          <p>システムによるデータ連携を行う事業所が<strong>{systemAdoptionIncrease}%</strong>増加しました。紙やFAXによる非効率な情報共有から脱却し、正確かつ迅速なデータ連携が実現しています。</p>
+        </div>
+        <div class="benefit-card">
+          <div class="benefit-icon">🔒</div>
+          <h3>情報セキュリティの向上</h3>
+          <p>システム導入により、個人情報の取り扱いセキュリティが向上しました。FAXや郵送による情報漏洩リスクが軽減され、安全な情報共有環境が構築されています。</p>
+        </div>
+      </div>
+    </section>
+
+    <section class="data-section">
+      <h2 class="section-title"><span class="section-icon">📊</span>データ分析について</h2>
+      <div class="data-content">
+        <div class="data-text">
+          <p>本分析では、ケアプランデータ連携システムの導入前後で収集されたタイムスタディデータを使用しています。個人レベルと事業所レベルの両方から分析を行い、システム導入による効果を多角的に検証しています。</p>
+          <p>詳細なデータ構造や内容については、CSVデータビューアーページでご確認いただけます。</p>
+          <a href="/csv-viewer/" class="btn btn-outline">
+            <span class="btn-icon">📋</span>CSVデータを確認する
+          </a>
+        </div>
+        <div class="data-visual">
+          <div class="data-chart">
+            <div class="chart-bar chart-before" style={`height: ${avgBeforeCreationTime}px`}>
+              <div class="chart-label">導入前</div>
+            </div>
+            <div class="chart-bar chart-after" style={`height: ${avgAfterCreationTime}px`}>
+              <div class="chart-label">導入後</div>
+            </div>
+            <div class="chart-title">提供票作成時間（分）</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="cta-section">
+      <div class="cta-content">
+        <h2 class="cta-title">詳細な分析結果を確認する</h2>
+        <p class="cta-text">個人レベルおよび事業所レベルでの詳細な分析結果を確認できます。各分析ページでは、共有方法別の時間比較やその他の重要な指標を確認できます。</p>
+        <div class="cta-buttons">
+          <a href="/individual/" class="btn btn-primary">
+            <span class="btn-icon">👤</span>個人分析を見る
+          </a>
+          <a href="/business/" class="btn btn-secondary">
+            <span class="btn-icon">🏢</span>事業所分析を見る
+          </a>
+        </div>
+      </div>
+    </section>
+  </main>
 </Layout>
+
+<style>
+  :root {
+    --primary-color: #2c5282;
+    --primary-light: #4299e1;
+    --primary-dark: #1a365d;
+    --secondary-color: #38b2ac;
+    --secondary-light: #4fd1c5;
+    --secondary-dark: #285e61;
+    --accent-color: #ed8936;
+    --accent-light: #f6ad55;
+    --accent-dark: #c05621;
+    --text-primary: #2d3748;
+    --text-secondary: #4a5568;
+    --text-light: #718096;
+    --bg-primary: #ffffff;
+    --bg-secondary: #f7fafc;
+    --bg-accent: #ebf4ff;
+    --border-color: #e2e8f0;
+    --box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    --border-radius: 8px;
+    --transition: all 0.3s ease;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem;
+  }
+
+  /* ヒーローセクション */
+  .hero {
+    position: relative;
+    display: flex;
+    align-items: center;
+    min-height: 500px;
+    padding: 4rem 0;
+    margin-bottom: 4rem;
+    overflow: hidden;
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary-color));
+    border-radius: var(--border-radius);
+    color: white;
+  }
+
+  .hero-content {
+    position: relative;
+    z-index: 10;
+    width: 60%;
+    padding: 0 2rem;
+  }
+
+  .hero h1 {
+    font-size: 2.75rem;
+    font-weight: 800;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+    color: white;
+  }
+
+  .highlight {
+    color: var(--accent-light);
+    position: relative;
+    display: inline-block;
+  }
+
+  .highlight::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100%;
+    height: 8px;
+    background-color: rgba(237, 137, 54, 0.3);
+    z-index: -1;
+  }
+
+  .lead {
+    font-size: 1.25rem;
+    line-height: 1.6;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+    max-width: 600px;
+  }
+
+  .hero-buttons {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  .hero-image {
+    position: absolute;
+    right: 0;
+    top: 0;
+    width: 40%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .hero-shape {
+    position: absolute;
+    width: 500px;
+    height: 500px;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0) 70%);
+    border-radius: 50%;
+  }
+
+  .hero-illustration {
+    position: relative;
+    width: 300px;
+    height: 300px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .illustration-icon {
+    position: absolute;
+    font-size: 3rem;
+    background-color: rgba(255, 255, 255, 0.1);
+    border-radius: 50%;
+    padding: 1rem;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    animation: float 3s infinite ease-in-out;
+  }
+
+  .illustration-icon:nth-child(1) {
+    top: 20%;
+    left: 20%;
+    animation-delay: 0s;
+  }
+
+  .illustration-icon:nth-child(2) {
+    top: 50%;
+    right: 10%;
+    animation-delay: 0.5s;
+  }
+
+  .illustration-icon:nth-child(3) {
+    bottom: 20%;
+    left: 30%;
+    animation-delay: 1s;
+  }
+
+  @keyframes float {
+    0%, 100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-20px);
+    }
+  }
+
+  /* セクションスタイル */
+  section {
+    margin-bottom: 4rem;
+  }
+
+  .section-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--primary-color);
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+    position: relative;
+    padding-bottom: 0.75rem;
+  }
+
+  .section-title::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    width: 100px;
+    height: 4px;
+    background: linear-gradient(to right, var(--primary-color), var(--primary-light));
+    border-radius: 2px;
+  }
+
+  .section-icon {
+    margin-right: 0.75rem;
+    font-size: 1.5rem;
+  }
+
+  /* サマリーセクション */
+  .summary-section {
+    background-color: var(--bg-secondary);
+    padding: 3rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    margin-bottom: 4rem;
+  }
+
+  .summary-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+  }
+
+  .stat-card {
+    background-color: var(--bg-primary);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    text-align: center;
+    transition: var(--transition);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 6px;
+    background: linear-gradient(to right, var(--primary-color), var(--secondary-color));
+  }
+
+  .stat-card:hover {
+    transform: translateY(-10px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+  }
+
+  .stat-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+  }
+
+  .stat-value {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: var(--primary-color);
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-label {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text-primary);
+    margin-bottom: 0.5rem;
+  }
+
+  .stat-description {
+    font-size: 0.9rem;
+    color: var(--text-light);
+  }
+
+  /* メリットセクション */
+  .benefits-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 2rem;
+  }
+
+  .benefit-card {
+    background-color: var(--bg-secondary);
+    padding: 2rem;
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
+    transition: var(--transition);
+    border-left: 4px solid var(--primary-color);
+  }
+
+  .benefit-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.1);
+  }
+
+  .benefit-icon {
+    font-size: 2rem;
+    margin-bottom: 1rem;
+    color: var(--primary-color);
+  }
+
+  .benefit-card h3 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    margin-bottom: 1rem;
+    color: var(--primary-dark);
+  }
+
+  .benefit-card p {
+    font-size: 1rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+
+  .benefit-card strong {
+    color: var(--accent-color);
+    font-weight: 700;
+  }
+
+  /* データセクション */
+  .data-section {
+    background-color: var(--bg-secondary);
+    padding: 3rem;
+    border-radius: var(--border-radius);
+    margin-bottom: 4rem;
+  }
+
+  .data-content {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2rem;
+    align-items: center;
+  }
+
+  .data-text {
+    flex: 1;
+    min-width: 300px;
+  }
+
+  .data-text p {
+    margin-bottom: 1.5rem;
+    line-height: 1.6;
+    color: var(--text-secondary);
+  }
+
+  .data-visual {
+    flex: 1;
+    min-width: 300px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .data-chart {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: 2rem;
+    height: 250px;
+    padding: 1rem;
+    position: relative;
+  }
+
+  .chart-bar {
+    width: 80px;
+    border-radius: 8px 8px 0 0;
+    position: relative;
+    transition: height 1s ease;
+  }
+
+  .chart-before {
+    background: linear-gradient(to top, var(--primary-color), var(--primary-light));
+  }
+
+  .chart-after {
+    background: linear-gradient(to top, var(--secondary-color), var(--secondary-light));
+  }
+
+  .chart-label {
+    position: absolute;
+    bottom: -30px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+  }
+
+  .chart-title {
+    position: absolute;
+    bottom: -60px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+  }
+
+  /* CTAセクション */
+  .cta-section {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    padding: 4rem 2rem;
+    border-radius: var(--border-radius);
+    color: white;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: url("data:image/svg+xml,%3Csvg width='100' height='100' viewBox='0 0 100 100' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M11 18c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm48 25c3.866 0 7-3.134 7-7s-3.134-7-7-7-7 3.134-7 7 3.134 7 7 7zm-43-7c1.657 0 3-1.343 3-3s-.895-2-2-2-2 .895-2 2 .895 2 2 2zm63 31c1.657 0 3-1.343 3-3s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM34 90c1.657 0 3-1.343 3-3s-.895-2-2-2-2 .895-2 2 .895 2 2 2zM12 60c1.657 0 3-1.343 3-3s-.895-2-2-2-2 .895-2 2 .895 2 2 2z' fill='rgba(255,255,255,.075)' fill-rule='evenodd'/%3E%3C/svg%3E");
+    opacity: 0.5;
+  }
+
+  .cta-content {
+    position: relative;
+    z-index: 10;
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .cta-title {
+    font-size: 2.25rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    color: white;
+  }
+
+  .cta-text {
+    font-size: 1.125rem;
+    margin-bottom: 2rem;
+    opacity: 0.9;
+  }
+
+  .cta-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
+  }
+
+  /* ボタンスタイル */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0.75rem 1.5rem;
+    font-size: 1rem;
+    font-weight: 600;
+    border-radius: var(--border-radius);
+    text-decoration: none;
+    transition: var(--transition);
+    cursor: pointer;
+    min-width: 180px;
+  }
+
+  .btn-icon {
+    margin-right: 0.5rem;
+    font-size: 1.25rem;
+  }
+
+  .btn-primary {
+    background-color: var(--primary-color);
+    color: white;
+    border: 2px solid var(--primary-color);
+  }
+
+  .btn-primary:hover {
+    background-color: var(--primary-dark);
+    border-color: var(--primary-dark);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .btn-secondary {
+    background-color: var(--secondary-color);
+    color: white;
+    border: 2px solid var(--secondary-color);
+  }
+
+  .btn-secondary:hover {
+    background-color: var(--secondary-dark);
+    border-color: var(--secondary-dark);
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  .btn-outline {
+    background-color: transparent;
+    color: var(--primary-color);
+    border: 2px solid var(--primary-color);
+  }
+
+  .btn-outline:hover {
+    background-color: var(--primary-color);
+    color: white;
+    transform: translateY(-3px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  /* レスポンシブデザイン */
+  @media (max-width: 992px) {
+    .hero-content {
+      width: 100%;
+      text-align: center;
+      padding: 2rem;
+    }
+
+    .hero-buttons {
+      justify-content: center;
+    }
+
+    .hero-image {
+      display: none;
+    }
+
+    .section-title {
+      font-size: 1.75rem;
+    }
+
+    .stat-value {
+      font-size: 2rem;
+    }
+
+    .cta-title {
+      font-size: 1.75rem;
+    }
+  }
+
+  @media (max-width: 768px) {
+    .hero {
+      min-height: 400px;
+      padding: 3rem 0;
+    }
+
+    .hero h1 {
+      font-size: 2rem;
+    }
+
+    .lead {
+      font-size: 1.1rem;
+    }
+
+    .summary-stats, .benefits-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .data-content {
+      flex-direction: column;
+    }
+
+    .data-chart {
+      height: 200px;
+    }
+
+    .chart-bar {
+      width: 60px;
+    }
+
+    .cta-buttons {
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .btn {
+      width: 100%;
+    }
+  }
+</style>

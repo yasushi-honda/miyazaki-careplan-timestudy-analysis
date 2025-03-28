@@ -10,79 +10,338 @@ const { title } = Astro.props;
 <html lang="ja">
 	<head>
 		<meta charset="UTF-8" />
+		<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 		<meta name="description" content="宮崎県ケアプランデータ連携システム導入支援タイムスタディ分析" />
 		<meta name="viewport" content="width=device-width" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
 		<title>{title}</title>
-    <style>
-      :root {
-        --accent: #2337ff;
-        --accent-dark: #000d8a;
-        --black: 15, 18, 25;
-        --gray: 96, 115, 159;
-        --gray-light: 212, 217, 232;
-        --gray-dark: 49, 53, 68;
-        --gray-gradient: rgba(var(--gray-light), 50%), rgba(var(--gray-light), 100%);
-        --box-shadow: 0 2px 6px rgba(var(--black), 25%), 0 4px 12px rgba(var(--black), 25%);
-      }
-      html {
-        font-family: system-ui, sans-serif;
-        background-color: #F6F6F6;
-      }
-      body {
-        margin: 0;
-      }
-      main {
-        margin: auto;
-        padding: 1rem;
-        width: 800px;
-        max-width: calc(100% - 2rem);
-        color: rgb(var(--black));
-        font-size: 18px;
-        line-height: 1.6;
-      }
-      h1 {
-        font-size: 2.5rem;
-        font-weight: 700;
-        line-height: 1;
-        text-align: center;
-        margin-bottom: 1em;
-      }
-      nav {
-        background-color: rgb(var(--gray-dark));
-        padding: 1rem;
-        margin-bottom: 2rem;
-        border-radius: 0 0 8px 8px;
-      }
-      nav ul {
-        list-style: none;
-        padding: 0;
-        margin: 0;
-        display: flex;
-        justify-content: center;
-        gap: 1rem;
-      }
-      nav a {
-        color: white;
-        text-decoration: none;
-        font-weight: 500;
-      }
-      nav a:hover {
-        text-decoration: underline;
-      }
-    </style>
+		<script is:inline>
+			// 文字化け対策として、グローバル変数で文字列リテラルを定義
+			window.sharingMethods = {
+				fax: "FAX",
+				email: "メール",
+				hand: "持参",
+				mail: "郵送",
+				system: "システム",
+				other: "その他"
+			};
+			window.Papa = window.Papa || {};
+		</script>
+		<script src="https://cdn.jsdelivr.net/npm/chart.js" type="text/javascript"></script>
+		<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js" type="text/javascript"></script>
+		<style>
+			:root {
+				--accent: #3b82f6;
+				--accent-light: #60a5fa;
+				--accent-dark: #1d4ed8;
+				--accent-gradient: linear-gradient(
+					45deg,
+					var(--accent),
+					var(--accent-light) 30%,
+					white 60%
+				);
+				--box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+				--border-radius: 0.5rem;
+				--font-sans: 'Noto Sans JP', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, 'Open Sans', 'Helvetica Neue', sans-serif;
+				--font-mono: 'Fira Code', 'Fira Mono', monospace;
+				--text-primary: #1f2937;
+				--text-secondary: #4b5563;
+				--bg-primary: #f9fafb;
+				--bg-secondary: #ffffff;
+				--bg-accent: #f3f4f6;
+				--border-color: #e5e7eb;
+				--success: #10b981;
+				--warning: #f59e0b;
+				--error: #ef4444;
+				--info: #3b82f6;
+			}
+			
+			* {
+				box-sizing: border-box;
+				margin: 0;
+				padding: 0;
+			}
+			
+			html {
+				font-family: var(--font-sans);
+				background: var(--bg-primary);
+				color: var(--text-primary);
+				font-size: 16px;
+				line-height: 1.6;
+				scroll-behavior: smooth;
+			}
+			
+			body {
+				margin: 0;
+				padding: 0;
+				min-height: 100vh;
+				display: flex;
+				flex-direction: column;
+			}
+			
+			header {
+				background-color: var(--bg-secondary);
+				box-shadow: var(--box-shadow);
+				padding: 1rem 0;
+				position: sticky;
+				top: 0;
+				z-index: 100;
+			}
+			
+			.header-content {
+				max-width: 1200px;
+				margin: 0 auto;
+				padding: 0 1.5rem;
+				display: flex;
+				justify-content: space-between;
+				align-items: center;
+			}
+			
+			.site-title {
+				font-size: 1.5rem;
+				font-weight: 700;
+				color: var(--accent-dark);
+				text-decoration: none;
+			}
+			
+			.site-title:hover {
+				color: var(--accent);
+			}
+			
+			nav ul {
+				display: flex;
+				list-style: none;
+				gap: 1.5rem;
+			}
+			
+			nav a {
+				color: var(--text-secondary);
+				text-decoration: none;
+				font-weight: 500;
+				padding: 0.5rem 0;
+				position: relative;
+				transition: color 0.3s ease;
+			}
+			
+			nav a:hover {
+				color: var(--accent);
+			}
+			
+			nav a::after {
+				content: '';
+				position: absolute;
+				bottom: 0;
+				left: 0;
+				width: 0;
+				height: 2px;
+				background-color: var(--accent);
+				transition: width 0.3s ease;
+			}
+			
+			nav a:hover::after {
+				width: 100%;
+			}
+			
+			nav a.active {
+				color: var(--accent);
+			}
+			
+			nav a.active::after {
+				width: 100%;
+			}
+			
+			main {
+				flex: 1;
+				padding: 2rem 1.5rem;
+			}
+			
+			footer {
+				background-color: var(--bg-secondary);
+				padding: 1.5rem 0;
+				text-align: center;
+				color: var(--text-secondary);
+				font-size: 0.875rem;
+				border-top: 1px solid var(--border-color);
+			}
+			
+			h1, h2, h3, h4, h5, h6 {
+				margin-bottom: 1rem;
+				line-height: 1.2;
+				color: var(--text-primary);
+			}
+			
+			h1 {
+				font-size: 2.25rem;
+				font-weight: 700;
+			}
+			
+			h2 {
+				font-size: 1.75rem;
+				font-weight: 600;
+				margin-top: 2rem;
+			}
+			
+			h3 {
+				font-size: 1.5rem;
+				font-weight: 600;
+			}
+			
+			p {
+				margin-bottom: 1.5rem;
+			}
+			
+			a {
+				color: var(--accent);
+				text-decoration: none;
+				transition: color 0.2s ease;
+			}
+			
+			a:hover {
+				color: var(--accent-dark);
+				text-decoration: underline;
+			}
+			
+			.container {
+				max-width: 1200px;
+				margin: 0 auto;
+			}
+			
+			.card {
+				background-color: var(--bg-secondary);
+				border-radius: var(--border-radius);
+				box-shadow: var(--box-shadow);
+				padding: 1.5rem;
+				margin-bottom: 1.5rem;
+				transition: transform 0.3s ease, box-shadow 0.3s ease;
+			}
+			
+			.card:hover {
+				transform: translateY(-5px);
+				box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+			}
+			
+			.btn {
+				display: inline-block;
+				background-color: var(--accent);
+				color: white;
+				padding: 0.75rem 1.5rem;
+				border-radius: var(--border-radius);
+				font-weight: 500;
+				text-align: center;
+				cursor: pointer;
+				transition: background-color 0.3s ease;
+				border: none;
+			}
+			
+			.btn:hover {
+				background-color: var(--accent-dark);
+				text-decoration: none;
+			}
+			
+			.btn-outline {
+				background-color: transparent;
+				color: var(--accent);
+				border: 1px solid var(--accent);
+			}
+			
+			.btn-outline:hover {
+				background-color: var(--accent);
+				color: white;
+			}
+			
+			.grid {
+				display: grid;
+				grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+				gap: 1.5rem;
+			}
+			
+			.badge {
+				display: inline-block;
+				padding: 0.25rem 0.75rem;
+				border-radius: 9999px;
+				font-size: 0.75rem;
+				font-weight: 500;
+				background-color: var(--accent-light);
+				color: white;
+			}
+			
+			.badge-success {
+				background-color: var(--success);
+			}
+			
+			.badge-warning {
+				background-color: var(--warning);
+			}
+			
+			.badge-error {
+				background-color: var(--error);
+			}
+			
+			.badge-info {
+				background-color: var(--info);
+			}
+			
+			@media (max-width: 768px) {
+				h1 {
+					font-size: 1.875rem;
+				}
+				
+				h2 {
+					font-size: 1.5rem;
+				}
+				
+				h3 {
+					font-size: 1.25rem;
+				}
+				
+				.header-content {
+					flex-direction: column;
+					gap: 1rem;
+				}
+				
+				nav ul {
+					gap: 1rem;
+				}
+			}
+		</style>
+		<script>
+			// 現在のページのナビゲーションリンクにactiveクラスを追加
+			document.addEventListener('DOMContentLoaded', () => {
+				const currentPath = window.location.pathname;
+				const navLinks = document.querySelectorAll('nav a');
+				
+				navLinks.forEach(link => {
+					const linkPath = link.getAttribute('href');
+					if (currentPath === linkPath || 
+							(linkPath !== '/' && currentPath.startsWith(linkPath))) {
+						link.classList.add('active');
+					}
+				});
+			});
+		</script>
 	</head>
 	<body>
-    <nav>
-      <ul>
-        <li><a href="/">トップ</a></li>
-        <li><a href="/business">事業所分析</a></li>
-        <li><a href="/individual">個人分析</a></li>
-      </ul>
-    </nav>
+		<header>
+			<div class="header-content">
+				<a href="/" class="site-title">宮崎県ケアプラン分析</a>
+				<nav>
+					<ul>
+						<li><a href="/">ホーム</a></li>
+						<li><a href="/individual/">個人分析</a></li>
+						<li><a href="/business/">事業所分析</a></li>
+						<li><a href="/csv-viewer/">CSVデータ</a></li>
+					</ul>
+				</nav>
+			</div>
+		</header>
 		<main>
 			<slot />
 		</main>
+		<footer>
+			<div class="container">
+				<p> {new Date().getFullYear()} 宮崎県ケアプランデータ連携システム導入支援タイムスタディ分析</p>
+			</div>
+		</footer>
 	</body>
 </html>

@@ -1,311 +1,391 @@
 ---
 import Layout from '../layouts/Layout.astro';
 import AnalysisChart from '../components/AnalysisChart.astro';
-import { loadCsvData, generateDummyData, aggregateSharingTimes } from '../data/csvData.js';
+import { getCsvData } from '../data/csvDataJson.js';
 
-// データを取得
-let beforeData = [];
-let afterData = [];
+// CSVデータの読み込み
+console.log('CSVデータの読み込みを開始します...');
+const beforeData = getCsvData('individual_before.csv');
+const afterData = getCsvData('individual_after.csv');
 
-try {
-  console.log('CSVデータの読み込みを開始します...');
-  beforeData = await loadCsvData('individual_before.csv');
-  console.log('beforeData取得成功:', beforeData.length, '件');
-} catch (error) {
-  console.error('beforeData取得エラー:', error);
-  beforeData = generateDummyData();
-  console.log('beforeDataにダミーデータを使用:', beforeData.length, '件');
-}
-
-try {
-  afterData = await loadCsvData('individual_after.csv');
-  console.log('afterData取得成功:', afterData.length, '件');
-} catch (error) {
-  console.error('afterData取得エラー:', error);
-  afterData = generateDummyData();
-  console.log('afterDataにダミーデータを使用:', afterData.length, '件');
-}
-
-// データが取得できなかった場合は、強制的にダミーデータを使用
-if (!beforeData || beforeData.length === 0) {
-  console.log('beforeDataが空のため、ダミーデータを使用します');
-  beforeData = generateDummyData();
-}
-
-if (!afterData || afterData.length === 0) {
-  console.log('afterDataが空のため、ダミーデータを使用します');
-  afterData = generateDummyData();
-}
-
-// デバッグ: CSVデータの読み込み状況を確認
 console.log('beforeData 件数:', beforeData.length);
 console.log('afterData 件数:', afterData.length);
 
-// 集計処理の前にデータが存在することを確認
-if (beforeData.length === 0 && afterData.length === 0) {
-  console.error('データが取得できませんでした。ダミーデータを使用します。');
-  beforeData = generateDummyData();
-  afterData = generateDummyData();
-}
-
-// Aggregate time spent on different sharing methods for both before and after
-const beforeTimes = aggregateSharingTimes(beforeData);
-const afterTimes = aggregateSharingTimes(afterData);
-
-// Prepare data for chart
-const labels = Object.keys(beforeTimes);
-const beforeValues = Object.values(beforeTimes);
-const afterValues = Object.values(afterTimes);
-
-// Calculate differences and percentages
-const differences = labels.map((label, index) => {
-  return afterValues[index] - beforeValues[index];
-});
-
-const percentages = labels.map((label, index) => {
-  if (beforeValues[index] === 0) return afterValues[index] > 0 ? 100 : 0;
-  return Math.round((differences[index] / beforeValues[index]) * 100);
-});
-
-// Calculate totals
-const beforeTotal = beforeValues.reduce((sum, value) => sum + value, 0);
-const afterTotal = afterValues.reduce((sum, value) => sum + value, 0);
-const totalDifference = afterTotal - beforeTotal;
-const totalPercentage = beforeTotal === 0 ? 0 : Math.round((totalDifference / beforeTotal) * 100);
-
-// Chart options
-const chartOptions = {
-  type: 'bar',
-  data: {
-    labels: labels,
-    datasets: [
-      {
-        label: '導入前',
-        data: beforeValues,
-        backgroundColor: 'rgba(54, 162, 235, 0.5)',
-        borderColor: 'rgba(54, 162, 235, 1)',
-        borderWidth: 1
-      },
-      {
-        label: '導入後',
-        data: afterValues,
-        backgroundColor: 'rgba(255, 99, 132, 0.5)',
-        borderColor: 'rgba(255, 99, 132, 1)',
-        borderWidth: 1
-      }
-    ]
-  },
-  options: {
-    responsive: true,
-    plugins: {
-      legend: {
-        position: 'top',
-      },
-      title: {
-        display: true,
-        text: '共有方法別の時間比較（時間単位）'
-      }
-    },
-    scales: {
-      y: {
-        beginAtZero: true,
-        title: {
-          display: true,
-          text: '時間 (h)'
-        }
-      }
+// 共有方法ごとの平均時間を計算
+const calculateAverageTimesByMethod = (data) => {
+  const methods = ["FAX", "メール", "持参", "郵送", "システム", "その他"];
+  const result = {};
+  
+  methods.forEach(method => {
+    const filteredData = data.filter(row => {
+      const sharingMethod = row["ケアプラン共有方法"] || row["共有方法"];
+      return sharingMethod === method;
+    });
+    
+    if (filteredData.length === 0) {
+      result[method] = 0;
+      return;
     }
-  }
+    
+    const totalCreationTime = filteredData.reduce((sum, row) => {
+      return sum + parseInt(row["1ヶ月あたりの提供票作成時間（分）"] || 0);
+    }, 0);
+    
+    const totalConfirmationTime = filteredData.reduce((sum, row) => {
+      return sum + parseInt(row["1ヶ月あたりの実績確認時間（分）"] || 0);
+    }, 0);
+    
+    // 合計時間（分）を計算
+    const totalTimeMinutes = totalCreationTime + totalConfirmationTime;
+    
+    // 平均時間を計算（時間単位に変換）
+    result[method] = Math.round((totalTimeMinutes / filteredData.length) / 60 * 10) / 10;
+  });
+  
+  return result;
 };
 
-// Convert to JSON for passing to the chart component
-const chartData = JSON.stringify(chartOptions);
+const beforeTimes = calculateAverageTimesByMethod(beforeData);
+const afterTimes = calculateAverageTimesByMethod(afterData);
+
+// 全体の平均時間を計算
+const calculateOverallAverages = (data) => {
+  if (data.length === 0) return { creation: 0, confirmation: 0, modification: 0 };
+  
+  const totalCreation = data.reduce((sum, row) => sum + parseInt(row["1ヶ月あたりの提供票作成時間（分）"] || 0), 0);
+  const totalConfirmation = data.reduce((sum, row) => sum + parseInt(row["1ヶ月あたりの実績確認時間（分）"] || 0), 0);
+  const totalModification = data.reduce((sum, row) => sum + parseInt(row["利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）"] || 0), 0);
+  
+  return {
+    creation: Math.round(totalCreation / data.length),
+    confirmation: Math.round(totalConfirmation / data.length),
+    modification: Math.round(totalModification / data.length)
+  };
+};
+
+const beforeAverages = calculateOverallAverages(beforeData);
+const afterAverages = calculateOverallAverages(afterData);
+
+// 時間削減効果を計算
+const timeReduction = {
+  creation: beforeAverages.creation - afterAverages.creation,
+  confirmation: beforeAverages.confirmation - afterAverages.confirmation,
+  modification: beforeAverages.modification - afterAverages.modification,
+  total: (beforeAverages.creation + beforeAverages.confirmation) - (afterAverages.creation + afterAverages.confirmation)
+};
+
+// 削減率を計算
+const reductionPercentage = {
+  creation: Math.round((timeReduction.creation / beforeAverages.creation) * 100),
+  confirmation: Math.round((timeReduction.confirmation / beforeAverages.confirmation) * 100),
+  modification: Math.round((timeReduction.modification / beforeAverages.modification) * 100),
+  total: Math.round((timeReduction.total / (beforeAverages.creation + beforeAverages.confirmation)) * 100)
+};
+
+// 年間削減時間を計算（月間削減時間 × 12ヶ月）
+const annualTimeSaved = timeReduction.total * 12;
+
+// 年間削減時間を時間と分に変換
+const annualHours = Math.floor(annualTimeSaved / 60);
+const annualMinutes = annualTimeSaved % 60;
 ---
 
-<Layout title="個人ケアプランタイムスタディ分析">
-  <main>
-    <h1>個人ケアプランタイムスタディ分析</h1>
-    
-    <section class="analysis-section">
-      <h2>共有方法別の時間比較</h2>
-      <div class="chart-container">
-        <AnalysisChart chartId="individualTimeChart" chartData={chartData} />
-      </div>
+<Layout title="個人分析 | 宮崎県ケアプランデータ連携システム導入効果分析">
+  <main class="container">
+    <section class="page-header">
+      <h1>個人レベルでの導入効果分析</h1>
+      <p class="lead">
+        ケアプランデータ連携システム導入前後での個人の業務時間変化を分析し、効率化の効果を可視化しています。
+      </p>
+    </section>
+
+    <section class="key-findings card">
+      <h2>主要な分析結果</h2>
       
-      <div class="results-container">
-        <h3>分析結果</h3>
-        <table class="results-table">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value">{timeReduction.total}分/月</div>
+          <div class="stat-label">総業務時間削減</div>
+          <div class="stat-description">1人あたりの月間削減時間</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-value">{reductionPercentage.total}%</div>
+          <div class="stat-label">業務効率化</div>
+          <div class="stat-description">月間業務時間の削減率</div>
+        </div>
+        
+        <div class="stat-card">
+          <div class="stat-value">{annualHours}時間{annualMinutes}分</div>
+          <div class="stat-label">年間削減時間</div>
+          <div class="stat-description">1人あたりの年間削減時間</div>
+        </div>
+      </div>
+    </section>
+
+    <section class="time-comparison card">
+      <h2>業務別時間比較</h2>
+      
+      <div class="comparison-table">
+        <table>
           <thead>
             <tr>
-              <th>共有方法</th>
-              <th>導入前 (h)</th>
-              <th>導入後 (h)</th>
-              <th>差分 (h)</th>
-              <th>変化率 (%)</th>
+              <th>業務内容</th>
+              <th>導入前</th>
+              <th>導入後</th>
+              <th>削減時間</th>
+              <th>削減率</th>
             </tr>
           </thead>
           <tbody>
-            {labels.map((label, index) => (
-              <tr>
-                <td>{label}</td>
-                <td>{beforeValues[index].toFixed(1)}</td>
-                <td>{afterValues[index].toFixed(1)}</td>
-                <td class={differences[index] < 0 ? 'decrease' : differences[index] > 0 ? 'increase' : ''}>
-                  {differences[index].toFixed(1)}
-                </td>
-                <td class={percentages[index] < 0 ? 'decrease' : percentages[index] > 0 ? 'increase' : ''}>
-                  {percentages[index]}%
-                </td>
-              </tr>
-            ))}
+            <tr>
+              <td>提供票作成</td>
+              <td>{beforeAverages.creation}分</td>
+              <td>{afterAverages.creation}分</td>
+              <td>{timeReduction.creation}分</td>
+              <td><span class="badge badge-success">{reductionPercentage.creation}%</span></td>
+            </tr>
+            <tr>
+              <td>実績確認</td>
+              <td>{beforeAverages.confirmation}分</td>
+              <td>{afterAverages.confirmation}分</td>
+              <td>{timeReduction.confirmation}分</td>
+              <td><span class="badge badge-success">{reductionPercentage.confirmation}%</span></td>
+            </tr>
+            <tr>
+              <td>修正対応</td>
+              <td>{beforeAverages.modification}分</td>
+              <td>{afterAverages.modification}分</td>
+              <td>{timeReduction.modification}分</td>
+              <td><span class="badge badge-success">{reductionPercentage.modification}%</span></td>
+            </tr>
             <tr class="total-row">
-              <td><strong>合計</strong></td>
-              <td><strong>{beforeTotal.toFixed(1)}</strong></td>
-              <td><strong>{afterTotal.toFixed(1)}</strong></td>
-              <td class={totalDifference < 0 ? 'decrease' : totalDifference > 0 ? 'increase' : ''}>
-                <strong>{totalDifference.toFixed(1)}</strong>
-              </td>
-              <td class={totalPercentage < 0 ? 'decrease' : totalPercentage > 0 ? 'increase' : ''}>
-                <strong>{totalPercentage}%</strong>
-              </td>
+              <td>合計時間</td>
+              <td>{beforeAverages.creation + beforeAverages.confirmation}分</td>
+              <td>{afterAverages.creation + afterAverages.confirmation}分</td>
+              <td>{timeReduction.total}分</td>
+              <td><span class="badge badge-success">{reductionPercentage.total}%</span></td>
             </tr>
           </tbody>
         </table>
       </div>
+    </section>
+
+    <section class="chart-section card">
+      <h2>共有方法別の時間比較</h2>
+      <div class="chart-container">
+        <AnalysisChart 
+          id="analysisChart"
+          chartType="bar"
+          beforeData={beforeTimes}
+          afterData={afterTimes}
+          beforeLabel="時間（導入前）"
+          afterLabel="時間（導入後）"
+          yAxisLabel="時間 (時間)"
+          xAxisLabel="共有方法"
+          chartTitle="ケアプラン共有方法別 所要時間の比較"
+        />
+      </div>
       
-      <div class="summary-container">
-        <h3>サマリー</h3>
-        <p>
-          ケアプランデータ連携システムの導入により、共有方法別の時間に以下の変化が見られました：
-        </p>
+      <div class="chart-insights">
+        <h3>分析結果のポイント</h3>
         <ul>
-          {labels.map((label, index) => (
-            <li>
-              <strong>{label}:</strong> 
-              {differences[index] < 0 
-                ? `${Math.abs(differences[index]).toFixed(1)}時間の削減 (${Math.abs(percentages[index])}% 減少)` 
-                : differences[index] > 0 
-                  ? `${differences[index].toFixed(1)}時間の増加 (${percentages[index]}% 増加)` 
-                  : '変化なし'}
-            </li>
-          ))}
+          <li><strong>システム導入効果：</strong> システムによる共有方法が最も効率的で、FAXや郵送と比較して大幅な時間削減が実現しています。</li>
+          <li><strong>全体的な効率化：</strong> すべての共有方法において導入前と比較して時間が削減されており、システム導入による間接的な効果も確認できます。</li>
+          <li><strong>最大の効果：</strong> 特にFAXや郵送など物理的な媒体を使用していた場合に、システム化による効率化効果が顕著に表れています。</li>
         </ul>
-        <p class="total-summary">
-          <strong>全体として:</strong> 
-          {totalDifference < 0 
-            ? `合計${Math.abs(totalDifference).toFixed(1)}時間の削減 (${Math.abs(totalPercentage)}% 減少)` 
-            : totalDifference > 0 
-              ? `合計${totalDifference.toFixed(1)}時間の増加 (${totalPercentage}% 増加)` 
-              : '全体的な変化なし'}
+      </div>
+    </section>
+
+    <section class="recommendations card">
+      <h2>改善提案と今後の展望</h2>
+      <div class="recommendations-content">
+        <p>
+          分析結果から、以下の改善提案と今後の展望が考えられます：
         </p>
+        <ol>
+          <li><strong>システム利用率の向上：</strong> まだシステムを利用していない事業所や個人に対して、導入支援や研修を強化することで、さらなる業務効率化が期待できます。</li>
+          <li><strong>業務フロー最適化：</strong> システム導入に合わせて業務フローを見直し、さらなる効率化を図ることが重要です。</li>
+          <li><strong>データ活用の促進：</strong> 蓄積されたデータを活用して、ケアプランの質向上や業務改善に役立てることができます。</li>
+          <li><strong>定期的な効果測定：</strong> 継続的にタイムスタディを実施し、効果を測定・検証することで、さらなる改善点を見出すことができます。</li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="navigation-links">
+      <div class="nav-buttons">
+        <a href="/" class="btn btn-outline">トップページに戻る</a>
+        <a href="/business/" class="btn">事業所分析を見る</a>
       </div>
     </section>
   </main>
 </Layout>
 
 <style>
-  main {
-    max-width: 1200px;
+  .page-header {
+    text-align: center;
+    margin-bottom: 2rem;
+  }
+
+  .lead {
+    font-size: 1.125rem;
+    color: var(--text-secondary);
+    max-width: 800px;
     margin: 0 auto;
-    padding: 2rem;
   }
-  
-  h1 {
-    font-size: 2.5rem;
-    margin-bottom: 2rem;
-    color: #333;
-    text-align: center;
-  }
-  
-  .analysis-section {
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    padding: 2rem;
-    margin-bottom: 2rem;
-  }
-  
-  h2 {
-    font-size: 1.8rem;
-    margin-bottom: 1.5rem;
-    color: #444;
-    border-bottom: 2px solid #eee;
-    padding-bottom: 0.5rem;
-  }
-  
-  h3 {
-    font-size: 1.5rem;
-    margin: 1.5rem 0 1rem;
-    color: #555;
-  }
-  
-  .chart-container {
-    width: 100%;
-    height: 400px;
-    margin-bottom: 2rem;
-  }
-  
-  .results-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-bottom: 1.5rem;
-  }
-  
-  .results-table th, .results-table td {
-    padding: 0.75rem;
-    border: 1px solid #ddd;
-    text-align: center;
-  }
-  
-  .results-table th {
-    background-color: #f5f5f5;
-    font-weight: bold;
-  }
-  
-  .results-table .total-row {
-    background-color: #f9f9f9;
-  }
-  
-  .decrease {
-    color: green;
-  }
-  
-  .increase {
-    color: red;
-  }
-  
-  .summary-container {
-    background-color: #f9f9f9;
-    border-radius: 6px;
+
+  .card {
+    background-color: var(--bg-secondary);
+    border-radius: var(--border-radius);
+    box-shadow: var(--box-shadow);
     padding: 1.5rem;
+    margin-bottom: 2rem;
   }
-  
-  .summary-container ul {
-    margin: 1rem 0;
-    padding-left: 1.5rem;
+
+  .stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
   }
-  
-  .summary-container li {
+
+  .stat-card {
+    background-color: var(--bg-accent);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    text-align: center;
+    transition: transform 0.3s ease;
+  }
+
+  .stat-card:hover {
+    transform: translateY(-5px);
+  }
+
+  .stat-value {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--accent);
     margin-bottom: 0.5rem;
   }
-  
-  .total-summary {
-    margin-top: 1rem;
-    font-size: 1.1rem;
+
+  .stat-label {
+    font-size: 1.125rem;
+    font-weight: 600;
+    margin-bottom: 0.5rem;
   }
-  
+
+  .stat-description {
+    font-size: 0.875rem;
+    color: var(--text-secondary);
+  }
+
+  .comparison-table {
+    overflow-x: auto;
+    margin-top: 1.5rem;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  th, td {
+    padding: 0.75rem 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--border-color);
+  }
+
+  th {
+    background-color: var(--bg-accent);
+    font-weight: 600;
+  }
+
+  tr:hover {
+    background-color: var(--bg-accent);
+  }
+
+  .total-row {
+    font-weight: 600;
+    background-color: var(--bg-accent);
+  }
+
+  .badge {
+    display: inline-block;
+    padding: 0.25rem 0.5rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
+    font-weight: 500;
+  }
+
+  .badge-success {
+    background-color: var(--success);
+    color: white;
+  }
+
+  .chart-container {
+    margin-top: 1.5rem;
+    margin-bottom: 2rem;
+  }
+
+  .chart-insights {
+    background-color: var(--bg-accent);
+    padding: 1.5rem;
+    border-radius: var(--border-radius);
+    margin-top: 1.5rem;
+  }
+
+  .chart-insights h3 {
+    margin-bottom: 1rem;
+  }
+
+  .chart-insights ul {
+    padding-left: 1.5rem;
+  }
+
+  .chart-insights li {
+    margin-bottom: 0.75rem;
+  }
+
+  .recommendations-content {
+    margin-top: 1rem;
+  }
+
+  .recommendations-content ol {
+    padding-left: 1.5rem;
+    margin-top: 1rem;
+  }
+
+  .recommendations-content li {
+    margin-bottom: 1rem;
+  }
+
+  .navigation-links {
+    margin-top: 3rem;
+    margin-bottom: 2rem;
+  }
+
+  .nav-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+  }
+
   @media (max-width: 768px) {
-    main {
-      padding: 1rem;
+    .nav-buttons {
+      flex-direction: column;
+      align-items: center;
     }
     
-    .chart-container {
-      height: 300px;
+    .stat-value {
+      font-size: 1.75rem;
     }
     
-    .results-table th, .results-table td {
+    table {
+      font-size: 0.875rem;
+    }
+    
+    th, td {
       padding: 0.5rem;
-      font-size: 0.9rem;
     }
   }
 </style>
