@@ -9,6 +9,88 @@ export async function loadCsvData(filePath) {
     // ファイル名のみを抽出
     const fileName = filePath.split('/').pop();
     
+    // 直接インポートを試みる（開発環境用）
+    try {
+      console.log('直接インポートを試行中...');
+      // 注: この方法はビルド時に静的インポートとして解決されるため、
+      // 動的なファイルパスには対応していません。特定のファイル名のみ対応。
+      let csvData = null;
+      
+      if (fileName === 'individual_before.csv') {
+        const response = await fetch('/data/individual_before.csv');
+        if (response.ok) {
+          csvData = await response.text();
+          console.log('individual_before.csv を直接インポートで読み込みました');
+        }
+      } else if (fileName === 'individual_after.csv') {
+        const response = await fetch('/data/individual_after.csv');
+        if (response.ok) {
+          csvData = await response.text();
+          console.log('individual_after.csv を直接インポートで読み込みました');
+        }
+      } else if (fileName === 'business_before.csv') {
+        const response = await fetch('/data/business_before.csv');
+        if (response.ok) {
+          csvData = await response.text();
+          console.log('business_before.csv を直接インポートで読み込みました');
+        }
+      } else if (fileName === 'business_after.csv') {
+        const response = await fetch('/data/business_after.csv');
+        if (response.ok) {
+          csvData = await response.text();
+          console.log('business_after.csv を直接インポートで読み込みました');
+        }
+      }
+      
+      if (csvData) {
+        // CSVテキストの前処理
+        let processedCsvText = csvData.replace(/\n(?=[^"]*"[^"]*(?:"[^"]*"[^"]*)*$)/g, ' ');
+        if (processedCsvText.charCodeAt(0) === 0xFEFF) {
+          processedCsvText = processedCsvText.substring(1);
+          console.log('BOMを削除しました');
+        }
+        
+        // CSVをパース
+        const parsedData = Papa.parse(processedCsvText, {
+          header: true,
+          skipEmptyLines: true,
+          dynamicTyping: true,
+          transformHeader: header => {
+            // ヘッダーの前処理を強化
+            return header
+              .replace(/\n/g, ' ')  // 改行を空白に置換
+              .replace(/\s+/g, ' ') // 連続する空白を1つに置換
+              .replace(/^[\s"]+|[\s"]+$/g, '') // 前後の空白と引用符を削除
+              .trim();
+          }
+        });
+        
+        if (parsedData.errors && parsedData.errors.length > 0) {
+          console.warn(`CSVパースエラー:`, parsedData.errors);
+        }
+        
+        // デバッグ: パースされたヘッダーを確認
+        console.log('パースされたヘッダー:', parsedData.meta.fields);
+        console.log('パースされたデータ行数:', parsedData.data.length);
+        
+        // 有効なデータ行のみをフィルタリング（空のオブジェクトや無効な行を除外）
+        const filteredData = parsedData.data.filter(row => 
+          row && typeof row === 'object' && Object.keys(row).length > 1
+        );
+        
+        console.log(`フィルタリング後のCSVデータの行数: ${filteredData.length}`);
+        
+        // データが空の場合はエラーを投げる
+        if (filteredData.length === 0) {
+          throw new Error('有効なデータが見つかりませんでした');
+        }
+        
+        return filteredData;
+      }
+    } catch (importError) {
+      console.error(`直接インポートエラー: ${importError.message}`);
+    }
+    
     // Astroプロジェクトでの正しいパス指定方法
     // publicディレクトリ内のファイルは、ルートからの相対パスで指定
     const pathVariants = [
@@ -123,6 +205,117 @@ export async function getFullCsvInfo(filePath) {
     
     // ファイル名のみを抽出
     const fileName = filePath.split('/').pop();
+    
+    // 直接インポートを試みる（開発環境用）
+    try {
+      console.log('直接インポートを試行中...');
+      // 注: この方法はビルド時に静的インポートとして解決されるため、
+      // 動的なファイルパスには対応していません。特定のファイル名のみ対応。
+      let csvData = null;
+      
+      if (fileName === 'individual_before.csv') {
+        const response = await fetch('/data/individual_before.csv');
+        if (response.ok) {
+          csvData = await response.text();
+          console.log('individual_before.csv を直接インポートで読み込みました');
+        }
+      } else if (fileName === 'individual_after.csv') {
+        const response = await fetch('/data/individual_after.csv');
+        if (response.ok) {
+          csvData = await response.text();
+          console.log('individual_after.csv を直接インポートで読み込みました');
+        }
+      } else if (fileName === 'business_before.csv') {
+        const response = await fetch('/data/business_before.csv');
+        if (response.ok) {
+          csvData = await response.text();
+          console.log('business_before.csv を直接インポートで読み込みました');
+        }
+      } else if (fileName === 'business_after.csv') {
+        const response = await fetch('/data/business_after.csv');
+        if (response.ok) {
+          csvData = await response.text();
+          console.log('business_after.csv を直接インポートで読み込みました');
+        }
+      }
+      
+      if (csvData) {
+        // CSVテキストの前処理
+        let processedCsvText = csvData;
+        if (processedCsvText.charCodeAt(0) === 0xFEFF) {
+          processedCsvText = processedCsvText.substring(1);
+          console.log('BOMを削除しました');
+        }
+        
+        // CSVをパース（ヘッダー情報を保持）
+        const parsedData = Papa.parse(processedCsvText, {
+          header: true,
+          skipEmptyLines: true,
+          dynamicTyping: true,
+          transformHeader: header => {
+            return header
+              .replace(/\n/g, ' ')
+              .replace(/\s+/g, ' ')
+              .replace(/^[\s"]+|[\s"]+$/g, '')
+              .trim();
+          }
+        });
+        
+        console.log('パースされたデータ行数:', parsedData.data.length);
+        
+        // 全てのヘッダー情報を取得
+        const headers = parsedData.meta.fields || [];
+        
+        // 有効なデータ行のみをフィルタリング（空のオブジェクトや無効な行を除外）
+        const validRows = parsedData.data.filter(row => 
+          row && typeof row === 'object' && Object.keys(row).length > 1
+        );
+        
+        console.log(`フィルタリング後の有効な行数: ${validRows.length}`);
+        
+        // データセットの統計情報を計算
+        const stats = {
+          totalRows: parsedData.data.length,
+          validRows: validRows.length,
+          headers: headers,
+          headerCount: headers.length,
+          firstRow: validRows.length > 0 ? validRows[0] : null,
+          errors: parsedData.errors || []
+        };
+        
+        // 各ヘッダーの値の種類と統計情報を収集
+        const headerStats = {};
+        headers.forEach(header => {
+          const values = validRows
+            .map(row => row[header])
+            .filter(val => val !== null && val !== undefined && val !== '');
+          
+          const numericValues = values
+            .filter(val => typeof val === 'number' || (typeof val === 'string' && !isNaN(parseFloat(val))))
+            .map(val => typeof val === 'number' ? val : parseFloat(val));
+          
+          headerStats[header] = {
+            valueCount: values.length,
+            uniqueValues: [...new Set(values)].length,
+            hasNumericValues: numericValues.length > 0,
+            min: numericValues.length > 0 ? Math.min(...numericValues) : null,
+            max: numericValues.length > 0 ? Math.max(...numericValues) : null,
+            avg: numericValues.length > 0 ? 
+              numericValues.reduce((sum, val) => sum + val, 0) / numericValues.length : null,
+            examples: values.slice(0, 3) // 最初の3つの値を例として表示
+          };
+        });
+        
+        return {
+          stats,
+          headerStats,
+          data: validRows,
+          rawHeaders: headers
+        };
+      }
+    } catch (importError) {
+      console.error(`直接インポートエラー: ${importError.message}`);
+    }
     
     // Astroプロジェクトでの正しいパス指定方法
     // publicディレクトリ内のファイルは、ルートからの相対パスで指定
