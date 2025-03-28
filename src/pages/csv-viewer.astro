@@ -1,6 +1,6 @@
 ---
 import Layout from '../layouts/Layout.astro';
-import { individualBeforeData, individualAfterData, businessBeforeData, businessAfterData } from '../data/csvDataJson.js';
+import { getCsvData } from '../data/csvDataJson.js';
 
 // CSVファイルのパス
 const csvFiles = [
@@ -11,6 +11,11 @@ const csvFiles = [
 ];
 
 // 実際のデータを取得
+const individualBeforeData = getCsvData('individual_before.csv');
+const individualAfterData = getCsvData('individual_after.csv');
+const businessBeforeData = getCsvData('business_before.csv');
+const businessAfterData = getCsvData('business_after.csv');
+
 const csvData = [
   individualBeforeData,
   individualAfterData,

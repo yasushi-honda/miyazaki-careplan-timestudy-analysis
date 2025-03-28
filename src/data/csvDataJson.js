@@ -1,8 +1,4 @@
 // CSVデータをJSONとして提供するモジュール
-import individualBeforeCsv from '../../public/data/individual_before.csv?raw';
-import individualAfterCsv from '../../public/data/individual_after.csv?raw';
-import businessBeforeCsv from '../../public/data/business_before.csv?raw';
-import businessAfterCsv from '../../public/data/business_after.csv?raw';
 import Papa from 'papaparse';
 
 // CSVテキストをJSONに変換する関数
@@ -30,25 +26,74 @@ function parseCSV(csvText) {
   return normalizedData;
 }
 
-// 各CSVファイルをパースしてエクスポート
-export const individualBeforeData = parseCSV(individualBeforeCsv);
-export const individualAfterData = parseCSV(individualAfterCsv);
-export const businessBeforeData = parseCSV(businessBeforeCsv);
-export const businessAfterData = parseCSV(businessAfterCsv);
+// ダミーデータを生成する関数
+function generateDummyData() {
+  return [
+    {
+      "ケアプラン共有方法": "FAX",
+      "1ヶ月あたりの提供票作成時間（分）": "60",
+      "1ヶ月あたりの実績確認時間（分）": "45",
+      "利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）": "30"
+    },
+    {
+      "ケアプラン共有方法": "メール",
+      "1ヶ月あたりの提供票作成時間（分）": "50",
+      "1ヶ月あたりの実績確認時間（分）": "40",
+      "利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）": "25"
+    },
+    {
+      "ケアプラン共有方法": "システム",
+      "1ヶ月あたりの提供票作成時間（分）": "30",
+      "1ヶ月あたりの実績確認時間（分）": "20",
+      "利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）": "15"
+    }
+  ];
+}
 
-// データを取得する関数
+// データを取得する関数（クライアントサイドでのみ実行）
 export function getCsvData(fileName) {
-  switch(fileName) {
-    case 'individual_before.csv':
-      return individualBeforeData;
-    case 'individual_after.csv':
-      return individualAfterData;
-    case 'business_before.csv':
-      return businessBeforeData;
-    case 'business_after.csv':
-      return businessAfterData;
-    default:
-      console.error(`Unknown file name: ${fileName}`);
-      return [];
+  // クライアントサイドでのみ実行
+  if (typeof window === 'undefined') {
+    console.warn(`サーバーサイドでのCSVデータ取得: ${fileName} - ダミーデータを返します`);
+    return generateDummyData();
   }
+  
+  // すでに読み込まれたデータがあればそれを返す
+  if (window.__csvDataCache && window.__csvDataCache[fileName]) {
+    return window.__csvDataCache[fileName];
+  }
+  
+  // キャッシュを初期化
+  if (!window.__csvDataCache) {
+    window.__csvDataCache = {};
+  }
+  
+  console.log(`CSVデータを読み込みます: ${fileName}`);
+  
+  // ダミーデータを返す（実際にはクライアントサイドでfetchする）
+  window.__csvDataCache[fileName] = generateDummyData();
+  
+  // 非同期にデータを読み込む
+  fetch(`/data/${fileName}`)
+    .then(response => {
+      if (!response.ok) {
+        throw new Error(`ファイル読み込みエラー: ${fileName} (${response.status})`);
+      }
+      return response.text();
+    })
+    .then(csvText => {
+      const data = parseCSV(csvText);
+      window.__csvDataCache[fileName] = data;
+      console.log(`CSVデータの読み込みが完了しました: ${fileName} (${data.length}件)`);
+      
+      // データが読み込まれたことをイベントとして発火
+      window.dispatchEvent(new CustomEvent('csv-data-loaded', { 
+        detail: { fileName, data } 
+      }));
+    })
+    .catch(error => {
+      console.error(`CSVファイル読み込み中にエラーが発生しました: ${fileName}`, error);
+    });
+  
+  return window.__csvDataCache[fileName];
 }

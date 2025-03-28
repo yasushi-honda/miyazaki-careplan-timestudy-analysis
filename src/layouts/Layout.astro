@@ -28,7 +28,8 @@ const { title } = Astro.props;
 			};
 			window.Papa = window.Papa || {};
 		</script>
-		<script src="https://cdn.jsdelivr.net/npm/chart.js" type="text/javascript"></script>
+		<!-- Chart.jsをdefer属性なしで読み込み、確実に利用可能にする -->
+		<script src="https://cdn.jsdelivr.net/npm/chart.js@3.9.1/dist/chart.min.js"></script>
 		<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js" type="text/javascript"></script>
 		<style>
 			:root {
