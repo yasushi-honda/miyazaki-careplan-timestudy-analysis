@@ -7,13 +7,11 @@ export async function loadCsvData(filePath) {
     console.log(`CSVファイルの読み込みを開始: ${filePath}`);
     
     // ファイルパスの修正（相対パスから絶対パスに変換）
-    // 複数のパスパターンを試行して、最初に成功したものを使用
+    // Astroプロジェクトでは、publicディレクトリ内のファイルはルートからの相対パスで指定
     const pathVariants = [
-      `/data/${filePath.split('/').pop()}`,
-      `./data/${filePath.split('/').pop()}`,
-      `../public/data/${filePath.split('/').pop()}`,
-      `/public/data/${filePath.split('/').pop()}`,
-      filePath // オリジナルのパスも試行
+      `/${filePath}`, // 例: /individual_before.csv
+      `/data/${filePath.split('/').pop()}`, // 例: /data/individual_before.csv
+      `/${filePath.split('/').pop()}` // ファイル名のみ
     ];
     
     let response = null;
@@ -23,12 +21,17 @@ export async function loadCsvData(filePath) {
     for (const path of pathVariants) {
       try {
         console.log(`パスを試行中: ${path}`);
-        const tempResponse = await fetch(path, { method: 'GET' });
+        const tempResponse = await fetch(path, { 
+          method: 'GET',
+          cache: 'no-cache' // キャッシュを無効化
+        });
         if (tempResponse.ok) {
           response = tempResponse;
           successPath = path;
           console.log(`成功したパス: ${path}`);
           break;
+        } else {
+          console.log(`パス ${path} でステータス: ${tempResponse.status}`);
         }
       } catch (err) {
         console.log(`パス ${path} でエラー: ${err.message}`);
@@ -77,13 +80,14 @@ export async function loadCsvData(filePath) {
     
     // デバッグ: パースされたヘッダーを確認
     console.log('パースされたヘッダー:', parsedData.meta.fields);
+    console.log('パースされたデータ行数:', parsedData.data.length);
     
-    // 有効なデータ行のみをフィルタリング
+    // 有効なデータ行のみをフィルタリング（空のオブジェクトや無効な行を除外）
     const filteredData = parsedData.data.filter(row => 
-      row && typeof row === 'object' && Object.keys(row).length > 3
+      row && typeof row === 'object' && Object.keys(row).length > 1
     );
     
-    console.log(`CSVデータの行数: ${filteredData.length}`);
+    console.log(`フィルタリング後のCSVデータの行数: ${filteredData.length}`);
     
     // データが空の場合はエラーを投げる
     if (filteredData.length === 0) {
@@ -104,13 +108,11 @@ export async function getFullCsvInfo(filePath) {
     console.log(`CSVの全情報を取得: ${filePath}`);
     
     // ファイルパスの修正（相対パスから絶対パスに変換）
-    // 複数のパスパターンを試行して、最初に成功したものを使用
+    // Astroプロジェクトでは、publicディレクトリ内のファイルはルートからの相対パスで指定
     const pathVariants = [
-      `/data/${filePath.split('/').pop()}`,
-      `./data/${filePath.split('/').pop()}`,
-      `../public/data/${filePath.split('/').pop()}`,
-      `/public/data/${filePath.split('/').pop()}`,
-      filePath // オリジナルのパスも試行
+      `/${filePath}`, // 例: /individual_before.csv
+      `/data/${filePath.split('/').pop()}`, // 例: /data/individual_before.csv
+      `/${filePath.split('/').pop()}` // ファイル名のみ
     ];
     
     let response = null;
@@ -120,12 +122,17 @@ export async function getFullCsvInfo(filePath) {
     for (const path of pathVariants) {
       try {
         console.log(`パスを試行中: ${path}`);
-        const tempResponse = await fetch(path, { method: 'GET' });
+        const tempResponse = await fetch(path, { 
+          method: 'GET',
+          cache: 'no-cache' // キャッシュを無効化
+        });
         if (tempResponse.ok) {
           response = tempResponse;
           successPath = path;
           console.log(`成功したパス: ${path}`);
           break;
+        } else {
+          console.log(`パス ${path} でステータス: ${tempResponse.status}`);
         }
       } catch (err) {
         console.log(`パス ${path} でエラー: ${err.message}`);
@@ -140,11 +147,13 @@ export async function getFullCsvInfo(filePath) {
     
     const csvText = await response.text();
     console.log(`CSVデータの長さ: ${csvText.length} 文字`);
+    console.log(`CSVデータの先頭部分: ${csvText.substring(0, 100)}...`);
     
     // CSVテキストの前処理
     let processedCsvText = csvText;
     if (processedCsvText.charCodeAt(0) === 0xFEFF) {
       processedCsvText = processedCsvText.substring(1);
+      console.log('BOMを削除しました');
     }
     
     // CSVをパース（ヘッダー情報を保持）
@@ -161,25 +170,32 @@ export async function getFullCsvInfo(filePath) {
       }
     });
     
+    console.log('パースされたデータ行数:', parsedData.data.length);
+    
     // 全てのヘッダー情報を取得
     const headers = parsedData.meta.fields || [];
+    
+    // 有効なデータ行のみをフィルタリング（空のオブジェクトや無効な行を除外）
+    const validRows = parsedData.data.filter(row => 
+      row && typeof row === 'object' && Object.keys(row).length > 1
+    );
+    
+    console.log(`フィルタリング後の有効な行数: ${validRows.length}`);
     
     // データセットの統計情報を計算
     const stats = {
       totalRows: parsedData.data.length,
-      validRows: parsedData.data.filter(row => 
-        row && typeof row === 'object' && Object.keys(row).length > 3
-      ).length,
+      validRows: validRows.length,
       headers: headers,
       headerCount: headers.length,
-      firstRow: parsedData.data.length > 0 ? parsedData.data[0] : null,
+      firstRow: validRows.length > 0 ? validRows[0] : null,
       errors: parsedData.errors || []
     };
     
     // 各ヘッダーの値の種類と統計情報を収集
     const headerStats = {};
     headers.forEach(header => {
-      const values = parsedData.data
+      const values = validRows
         .map(row => row[header])
         .filter(val => val !== null && val !== undefined && val !== '');
       
@@ -202,7 +218,7 @@ export async function getFullCsvInfo(filePath) {
     return {
       stats,
       headerStats,
-      data: parsedData.data,
+      data: validRows,
       rawHeaders: headers
     };
   } catch (error) {
