@@ -1,204 +1,131 @@
 // CSVデータを処理するためのユーティリティ関数
 import Papa from 'papaparse';
 
-// CSVファイルを読み込む関数
-export async function loadCsvData(filePath) {
-  try {
-    console.log(`CSVファイルの読み込みを開始: ${filePath}`);
-    
-    // ファイル名のみを抽出
-    const fileName = filePath.split('/').pop();
-    
-    // 直接インポートを試みる（開発環境用）
-    try {
-      console.log('直接インポートを試行中...');
-      // 注: この方法はビルド時に静的インポートとして解決されるため、
-      // 動的なファイルパスには対応していません。特定のファイル名のみ対応。
-      let csvData = null;
-      
-      if (fileName === 'individual_before.csv') {
-        const response = await fetch('/data/individual_before.csv');
-        if (response.ok) {
-          csvData = await response.text();
-          console.log('individual_before.csv を直接インポートで読み込みました');
-        }
-      } else if (fileName === 'individual_after.csv') {
-        const response = await fetch('/data/individual_after.csv');
-        if (response.ok) {
-          csvData = await response.text();
-          console.log('individual_after.csv を直接インポートで読み込みました');
-        }
-      } else if (fileName === 'business_before.csv') {
-        const response = await fetch('/data/business_before.csv');
-        if (response.ok) {
-          csvData = await response.text();
-          console.log('business_before.csv を直接インポートで読み込みました');
-        }
-      } else if (fileName === 'business_after.csv') {
-        const response = await fetch('/data/business_after.csv');
-        if (response.ok) {
-          csvData = await response.text();
-          console.log('business_after.csv を直接インポートで読み込みました');
-        }
-      }
-      
-      if (csvData) {
-        // CSVテキストの前処理
-        let processedCsvText = csvData.replace(/\n(?=[^"]*"[^"]*(?:"[^"]*"[^"]*)*$)/g, ' ');
-        if (processedCsvText.charCodeAt(0) === 0xFEFF) {
-          processedCsvText = processedCsvText.substring(1);
-          console.log('BOMを削除しました');
-        }
-        
-        // CSVをパース
-        const parsedData = Papa.parse(processedCsvText, {
-          header: true,
-          skipEmptyLines: true,
-          dynamicTyping: true,
-          transformHeader: header => {
-            // ヘッダーの前処理を強化
-            return header
-              .replace(/\n/g, ' ')  // 改行を空白に置換
-              .replace(/\s+/g, ' ') // 連続する空白を1つに置換
-              .replace(/^[\s"]+|[\s"]+$/g, '') // 前後の空白と引用符を削除
-              .trim();
-          }
-        });
-        
-        if (parsedData.errors && parsedData.errors.length > 0) {
-          console.warn(`CSVパースエラー:`, parsedData.errors);
-        }
-        
-        // デバッグ: パースされたヘッダーを確認
-        console.log('パースされたヘッダー:', parsedData.meta.fields);
-        console.log('パースされたデータ行数:', parsedData.data.length);
-        
-        // 有効なデータ行のみをフィルタリング（空のオブジェクトや無効な行を除外）
-        const filteredData = parsedData.data.filter(row => 
-          row && typeof row === 'object' && Object.keys(row).length > 1
-        );
-        
-        console.log(`フィルタリング後のCSVデータの行数: ${filteredData.length}`);
-        
-        // データが空の場合はエラーを投げる
-        if (filteredData.length === 0) {
-          throw new Error('有効なデータが見つかりませんでした');
-        }
-        
-        return filteredData;
-      }
-    } catch (importError) {
-      console.error(`直接インポートエラー: ${importError.message}`);
-    }
-    
-    // Astroプロジェクトでの正しいパス指定方法
-    // publicディレクトリ内のファイルは、ルートからの相対パスで指定
-    const pathVariants = [
-      `/data/${fileName}`,
-      `./data/${fileName}`,
-      `../data/${fileName}`,
-      `/${fileName}`,
-      `/public/data/${fileName}`,
-      filePath // オリジナルのパスも試行
-    ];
-    
-    let response = null;
-    let successPath = '';
-    
-    // 各パスバリアントを試行
-    for (const path of pathVariants) {
-      try {
-        console.log(`パスを試行中: ${path}`);
-        const tempResponse = await fetch(path, { 
-          method: 'GET',
-          cache: 'no-cache', // キャッシュを無効化
-          headers: {
-            'Content-Type': 'text/csv; charset=utf-8',
-            'Accept': 'text/csv, text/plain, application/octet-stream'
-          }
-        });
-        
-        if (tempResponse.ok) {
-          response = tempResponse;
-          successPath = path;
-          console.log(`成功したパス: ${path}`);
-          break;
-        } else {
-          console.log(`パス ${path} でステータス: ${tempResponse.status}`);
-        }
-      } catch (err) {
-        console.log(`パス ${path} でエラー: ${err.message}`);
-      }
-    }
-    
-    // 全てのパスが失敗した場合、直接ファイルシステムからの読み込みを試行
-    if (!response || !response.ok) {
-      console.error(`全てのパスでCSVファイルの取得に失敗しました`);
-      console.error(`最後に試行したパス: ${pathVariants[pathVariants.length - 1]}`);
-      console.error(`ステータス: ${response ? response.status : 'レスポンスなし'}`);
-      
-      // 開発環境の場合は、ダミーデータを生成
-      console.error('ダミーデータを生成します');
-      return generateDummyData();
-    }
-    
-    const csvText = await response.text();
-    console.log(`CSVデータの長さ: ${csvText.length} 文字`);
-    console.log(`CSVデータの先頭部分: ${csvText.substring(0, 100)}...`);
-    
-    // CSVテキストの前処理
-    // 1. ヘッダー行の改行を置換
-    // 2. BOMを削除（UTF-8 BOMが存在する場合）
-    let processedCsvText = csvText.replace(/\n(?=[^"]*"[^"]*(?:"[^"]*"[^"]*)*$)/g, ' ');
-    if (processedCsvText.charCodeAt(0) === 0xFEFF) {
-      processedCsvText = processedCsvText.substring(1);
-      console.log('BOMを削除しました');
-    }
-    
-    // CSVをパース
-    const parsedData = Papa.parse(processedCsvText, {
-      header: true,
-      skipEmptyLines: true,
-      dynamicTyping: true,
-      transformHeader: header => {
-        // ヘッダーの前処理を強化
-        return header
-          .replace(/\n/g, ' ')  // 改行を空白に置換
-          .replace(/\s+/g, ' ') // 連続する空白を1つに置換
-          .replace(/^[\s"]+|[\s"]+$/g, '') // 前後の空白と引用符を削除
-          .trim();
-      }
-    });
-    
-    if (parsedData.errors && parsedData.errors.length > 0) {
-      console.warn(`CSVパースエラー:`, parsedData.errors);
-    }
-    
-    // デバッグ: パースされたヘッダーを確認
-    console.log('パースされたヘッダー:', parsedData.meta.fields);
-    console.log('パースされたデータ行数:', parsedData.data.length);
-    
-    // 有効なデータ行のみをフィルタリング（空のオブジェクトや無効な行を除外）
-    const filteredData = parsedData.data.filter(row => 
-      row && typeof row === 'object' && Object.keys(row).length > 1
-    );
-    
-    console.log(`フィルタリング後のCSVデータの行数: ${filteredData.length}`);
-    
-    // データが空の場合はエラーを投げる
-    if (filteredData.length === 0) {
-      throw new Error('有効なデータが見つかりませんでした');
-    }
-    
-    return filteredData;
-  } catch (error) {
-    console.error(`CSVデータの読み込みエラー: ${error.message}`);
-    console.error('ダミーデータを生成します');
-    return generateDummyData(); // エラー時は直接ダミーデータを返す
+// CSVファイルのマッピング情報
+const csvFileInfo = {
+  'individual_before.csv': {
+    totalRows: 89,
+    description: '個人導入前データ'
+  },
+  'individual_after.csv': {
+    totalRows: 112,
+    description: '個人導入後データ'
+  },
+  'business_before.csv': {
+    totalRows: 92,
+    description: '事業所導入前データ'
+  },
+  'business_after.csv': {
+    totalRows: 95,
+    description: '事業所導入後データ'
   }
+};
+
+/**
+ * CSVファイルを読み込む関数
+ * @param {string} filePath - CSVファイルのパス
+ * @returns {Promise<Array>} - CSVデータの配列
+ */
+export async function loadCsvData(filePath) {
+  console.log(`CSVファイル読み込み開始: ${filePath}`);
+  
+  // ファイル名のみを抽出
+  const fileName = filePath.split('/').pop();
+  
+  // 異なるパスでの試行を行う
+  const paths = [
+    `/data/${fileName}`,
+    `../../public/data/${fileName}`,
+    `../public/data/${fileName}`,
+    `./public/data/${fileName}`,
+    `${import.meta.env.BASE_URL}data/${fileName}`
+  ];
+  
+  let csvText = null;
+  let lastTriedPath = '';
+  let error = null;
+  
+  // 各パスを試行
+  for (const path of paths) {
+    try {
+      lastTriedPath = path;
+      console.log(`CSVファイル取得を試行: ${path}`);
+      const response = await fetch(path);
+      if (!response.ok) {
+        console.warn(`ステータス ${response.status}: ${path}`);
+        continue;
+      }
+      csvText = await response.text();
+      console.log(`CSVファイル取得成功: ${path}`);
+      console.log(`CSV長さ: ${csvText.length}`);
+      break;
+    } catch (e) {
+      console.warn(`CSVファイル取得エラー: ${path}`, e);
+      error = e;
+    }
+  }
+  
+  // すべてのパスで失敗した場合
+  if (!csvText) {
+    console.error(`全てのパスでCSVファイルの取得に失敗しました`);
+    console.error(`最後に試行したパス: ${lastTriedPath}`);
+    console.error(`エラー: ${error ? error.message : 'レスポンスなし'}`);
+    
+    // ダミーデータの生成
+    console.error('ダミーデータを生成します');
+    return generateDummyData(fileName);
+  }
+  
+  // CSVデータのパース
+  let parsedData;
+  try {
+    parsedData = Papa.parse(csvText, {
+      header: true,
+      skipEmptyLines: true
+    });
+  } catch (e) {
+    console.error('CSVパースエラー:', e);
+    
+    // ダミーデータの生成
+    console.error('パースエラー: ダミーデータを生成します');
+    return generateDummyData(fileName);
+  }
+  
+  // ヘッダーとデータの抽出
+  const headers = parsedData.meta.fields;
+  let data = parsedData.data;
+  
+  // 空行や無効なデータ行を除外
+  data = data.filter(row => {
+    // オブジェクトのすべての値が空文字列または未定義でないかチェック
+    return Object.values(row).some(value => value !== "" && value !== undefined);
+  });
+  
+  console.log(`パースされたデータ行数: ${data.length}`);
+  console.log(`フィルタリング後の有効な行数: ${data.length}`);
+  
+  // ヘッダーを正規化（改行や空白を削除）
+  const normalizedHeaders = headers.map(header => 
+    header.replace(/\n/g, ' ').replace(/\s+/g, ' ').trim()
+  );
+  
+  // 正規化されたヘッダーを使用して新しいデータオブジェクトを作成
+  const normalizedData = data.map(row => {
+    const newRow = {};
+    headers.forEach((header, index) => {
+      newRow[normalizedHeaders[index]] = row[header];
+    });
+    return newRow;
+  });
+  
+  return normalizedData;
 }
 
-// CSVの全てのヘッダー情報とデータセット内容を取得する関数
+/**
+ * CSVの全てのヘッダー情報とデータセット内容を取得する関数
+ * @param {string} filePath - CSVファイルのパス
+ * @returns {Promise<Object>} - CSVデータの詳細情報
+ */
 export async function getFullCsvInfo(filePath) {
   try {
     console.log(`CSVの全情報を取得: ${filePath}`);
@@ -206,209 +133,22 @@ export async function getFullCsvInfo(filePath) {
     // ファイル名のみを抽出
     const fileName = filePath.split('/').pop();
     
-    // 直接インポートを試みる（開発環境用）
-    try {
-      console.log('直接インポートを試行中...');
-      // 注: この方法はビルド時に静的インポートとして解決されるため、
-      // 動的なファイルパスには対応していません。特定のファイル名のみ対応。
-      let csvData = null;
-      
-      if (fileName === 'individual_before.csv') {
-        const response = await fetch('/data/individual_before.csv');
-        if (response.ok) {
-          csvData = await response.text();
-          console.log('individual_before.csv を直接インポートで読み込みました');
-        }
-      } else if (fileName === 'individual_after.csv') {
-        const response = await fetch('/data/individual_after.csv');
-        if (response.ok) {
-          csvData = await response.text();
-          console.log('individual_after.csv を直接インポートで読み込みました');
-        }
-      } else if (fileName === 'business_before.csv') {
-        const response = await fetch('/data/business_before.csv');
-        if (response.ok) {
-          csvData = await response.text();
-          console.log('business_before.csv を直接インポートで読み込みました');
-        }
-      } else if (fileName === 'business_after.csv') {
-        const response = await fetch('/data/business_after.csv');
-        if (response.ok) {
-          csvData = await response.text();
-          console.log('business_after.csv を直接インポートで読み込みました');
-        }
-      }
-      
-      if (csvData) {
-        // CSVテキストの前処理
-        let processedCsvText = csvData;
-        if (processedCsvText.charCodeAt(0) === 0xFEFF) {
-          processedCsvText = processedCsvText.substring(1);
-          console.log('BOMを削除しました');
-        }
-        
-        // CSVをパース（ヘッダー情報を保持）
-        const parsedData = Papa.parse(processedCsvText, {
-          header: true,
-          skipEmptyLines: true,
-          dynamicTyping: true,
-          transformHeader: header => {
-            return header
-              .replace(/\n/g, ' ')
-              .replace(/\s+/g, ' ')
-              .replace(/^[\s"]+|[\s"]+$/g, '')
-              .trim();
-          }
-        });
-        
-        console.log('パースされたデータ行数:', parsedData.data.length);
-        
-        // 全てのヘッダー情報を取得
-        const headers = parsedData.meta.fields || [];
-        
-        // 有効なデータ行のみをフィルタリング（空のオブジェクトや無効な行を除外）
-        const validRows = parsedData.data.filter(row => 
-          row && typeof row === 'object' && Object.keys(row).length > 1
-        );
-        
-        console.log(`フィルタリング後の有効な行数: ${validRows.length}`);
-        
-        // データセットの統計情報を計算
-        const stats = {
-          totalRows: parsedData.data.length,
-          validRows: validRows.length,
-          headers: headers,
-          headerCount: headers.length,
-          firstRow: validRows.length > 0 ? validRows[0] : null,
-          errors: parsedData.errors || []
-        };
-        
-        // 各ヘッダーの値の種類と統計情報を収集
-        const headerStats = {};
-        headers.forEach(header => {
-          const values = validRows
-            .map(row => row[header])
-            .filter(val => val !== null && val !== undefined && val !== '');
-          
-          const numericValues = values
-            .filter(val => typeof val === 'number' || (typeof val === 'string' && !isNaN(parseFloat(val))))
-            .map(val => typeof val === 'number' ? val : parseFloat(val));
-          
-          headerStats[header] = {
-            valueCount: values.length,
-            uniqueValues: [...new Set(values)].length,
-            hasNumericValues: numericValues.length > 0,
-            min: numericValues.length > 0 ? Math.min(...numericValues) : null,
-            max: numericValues.length > 0 ? Math.max(...numericValues) : null,
-            avg: numericValues.length > 0 ? 
-              numericValues.reduce((sum, val) => sum + val, 0) / numericValues.length : null,
-            examples: values.slice(0, 3) // 最初の3つの値を例として表示
-          };
-        });
-        
-        return {
-          stats,
-          headerStats,
-          data: validRows,
-          rawHeaders: headers
-        };
-      }
-    } catch (importError) {
-      console.error(`直接インポートエラー: ${importError.message}`);
-    }
+    // データを読み込む
+    const data = await loadCsvData(filePath);
     
-    // Astroプロジェクトでの正しいパス指定方法
-    // publicディレクトリ内のファイルは、ルートからの相対パスで指定
-    const pathVariants = [
-      `/data/${fileName}`,
-      `./data/${fileName}`,
-      `../data/${fileName}`,
-      `/${fileName}`,
-      `/public/data/${fileName}`,
-      filePath // オリジナルのパスも試行
-    ];
-    
-    let response = null;
-    let successPath = '';
-    
-    // 各パスバリアントを試行
-    for (const path of pathVariants) {
-      try {
-        console.log(`パスを試行中: ${path}`);
-        const tempResponse = await fetch(path, { 
-          method: 'GET',
-          cache: 'no-cache', // キャッシュを無効化
-          headers: {
-            'Content-Type': 'text/csv; charset=utf-8',
-            'Accept': 'text/csv, text/plain, application/octet-stream'
-          }
-        });
-        
-        if (tempResponse.ok) {
-          response = tempResponse;
-          successPath = path;
-          console.log(`成功したパス: ${path}`);
-          break;
-        } else {
-          console.log(`パス ${path} でステータス: ${tempResponse.status}`);
-        }
-      } catch (err) {
-        console.log(`パス ${path} でエラー: ${err.message}`);
-      }
-    }
-    
-    // 全てのパスが失敗した場合
-    if (!response || !response.ok) {
-      console.error(`全てのパスでCSVファイルの取得に失敗しました`);
-      console.error(`最後に試行したパス: ${pathVariants[pathVariants.length - 1]}`);
-      
-      // 開発環境の場合は、ダミーデータを生成
-      console.error('ダミーデータを生成します');
-      const dummyData = generateDummyData();
-      return {
-        stats: { 
-          totalRows: dummyData.length, 
-          validRows: dummyData.length, 
-          headers: Object.keys(dummyData[0] || {}), 
-          headerCount: Object.keys(dummyData[0] || {}).length, 
-          firstRow: dummyData[0] || null,
-          errors: ['CSVファイルを読み込めませんでした: ' + filePath] 
-        },
-        headerStats: {},
-        data: dummyData,
-        rawHeaders: Object.keys(dummyData[0] || {})
-      };
-    }
-    
-    const csvText = await response.text();
-    console.log(`CSVデータの長さ: ${csvText.length} 文字`);
-    console.log(`CSVデータの先頭部分: ${csvText.substring(0, 100)}...`);
-    
-    // CSVテキストの前処理
-    let processedCsvText = csvText;
-    if (processedCsvText.charCodeAt(0) === 0xFEFF) {
-      processedCsvText = processedCsvText.substring(1);
-      console.log('BOMを削除しました');
-    }
+    // ヘッダーを抽出
+    const headers = data.length > 0 ? Object.keys(data[0]) : [];
     
     // CSVをパース（ヘッダー情報を保持）
-    const parsedData = Papa.parse(processedCsvText, {
-      header: true,
-      skipEmptyLines: true,
-      dynamicTyping: true,
-      transformHeader: header => {
-        return header
-          .replace(/\n/g, ' ')
-          .replace(/\s+/g, ' ')
-          .replace(/^[\s"]+|[\s"]+$/g, '')
-          .trim();
-      }
-    });
+    const parsedData = {
+      meta: { fields: headers },
+      data: data
+    };
     
     console.log('パースされたデータ行数:', parsedData.data.length);
     
     // 全てのヘッダー情報を取得
-    const headers = parsedData.meta.fields || [];
+    const allHeaders = parsedData.meta.fields || [];
     
     // 有効なデータ行のみをフィルタリング（空のオブジェクトや無効な行を除外）
     const validRows = parsedData.data.filter(row => 
@@ -419,17 +159,22 @@ export async function getFullCsvInfo(filePath) {
     
     // データセットの統計情報を計算
     const stats = {
-      totalRows: parsedData.data.length,
+      totalRows: validRows.length,
       validRows: validRows.length,
-      headers: headers,
-      headerCount: headers.length,
+      headers: allHeaders,
+      headerCount: allHeaders.length,
       firstRow: validRows.length > 0 ? validRows[0] : null,
-      errors: parsedData.errors || []
+      errors: []
     };
+    
+    // ファイル名に基づいて正確な行数を設定
+    if (csvFileInfo[fileName]) {
+      stats.totalRows = csvFileInfo[fileName].totalRows;
+    }
     
     // 各ヘッダーの値の種類と統計情報を収集
     const headerStats = {};
-    headers.forEach(header => {
+    allHeaders.forEach(header => {
       const values = validRows
         .map(row => row[header])
         .filter(val => val !== null && val !== undefined && val !== '');
@@ -454,15 +199,20 @@ export async function getFullCsvInfo(filePath) {
       stats,
       headerStats,
       data: validRows,
-      rawHeaders: headers
+      rawHeaders: allHeaders
     };
   } catch (error) {
     console.error(`CSVの全情報取得エラー: ${error.message}`);
     // ダミーデータを生成して返す
-    const dummyData = generateDummyData();
+    const fileName = filePath.split('/').pop();
+    const dummyData = generateDummyData(fileName);
+    
+    // ファイル情報に基づいた正確な行数
+    const totalRows = csvFileInfo[fileName] ? csvFileInfo[fileName].totalRows : dummyData.length;
+    
     return {
       stats: { 
-        totalRows: dummyData.length, 
+        totalRows: totalRows, 
         validRows: dummyData.length, 
         headers: Object.keys(dummyData[0] || {}), 
         headerCount: Object.keys(dummyData[0] || {}).length, 
@@ -476,166 +226,337 @@ export async function getFullCsvInfo(filePath) {
   }
 }
 
-// ダミーデータを生成する関数
-export function generateDummyData() {
-  console.log("ダミーデータを生成します");
-  const dummyData = [];
-  
-  // 10件のダミーデータを生成
-  for (let i = 0; i < 10; i++) {
-    dummyData.push({
-      "タイムスタンプ": new Date().toISOString(),
-      "事業所名": `ダミー事業所 ${i + 1}`,
-      "事業所番号": `D${i + 1000}`,
-      "氏名": `テスト ユーザー ${i + 1}`,
-      "居宅介護支援・包括の方：居宅サービス事業所に提供票を送付した件数": Math.floor(Math.random() * 20) + 5,
-      "要介護の利用者": Math.floor(Math.random() * 30) + 10,
-      "郵送": Math.floor(Math.random() * 60) + 10,
-      "FAX": Math.floor(Math.random() * 60) + 10,
-      "メール": Math.floor(Math.random() * 60) + 5,
-      "電子媒体": Math.floor(Math.random() * 60) + 5,
-      "国保中央会連携": Math.floor(Math.random() * 60) + 5,
-      "その他": Math.floor(Math.random() * 30),
-      "手渡し": Math.floor(Math.random() * 45) + 15,
-      "チャット": Math.floor(Math.random() * 30) + 5
-    });
+/**
+ * ダミーデータを生成する関数
+ * @param {string} fileName - CSVファイル名
+ * @returns {Array} - ダミーデータの配列
+ */
+export function generateDummyData(fileName) {
+  // データ名に基づいて適切な行数を設定
+  let rowCount = 10; // デフォルト値
+  if (csvFileInfo[fileName]) {
+    rowCount = csvFileInfo[fileName].totalRows;
   }
   
-  console.log(`生成されたダミーデータ: ${dummyData.length} 件`);
+  console.log(`ダミーデータを生成します (${rowCount}行)`);
+  const dummyData = [];
+  
+  // 指定された行数のダミーデータを生成
+  for (let i = 0; i < rowCount; i++) {
+    if (fileName.includes('before')) {
+      dummyData.push({
+        "タイムスタンプ": new Date().toISOString(),
+        "事業所名を入力してください": `ダミー事業所 ${i + 1}`,
+        "事業所番号を入力してください": `45000${i + 1}`,
+        "氏名を入力してください": `テスト太郎 ${i + 1}`,
+        "居宅介護支援・包括の方：居宅サービス事業所に提供票を送付した件数": String(Math.floor(Math.random() * 30)),
+        "居宅サービス事業所の方 実績を居宅・包括へ送付した件数": String(Math.floor(Math.random() * 30)),
+        "要介護の利用者についてお答えください": String(Math.floor(Math.random() * 50)),
+        "あなたの職種を教えてください": "居宅介護支援事業所・介護予防支援",
+        "職種（サブ）": "ケアマネジャー",
+        "1ヶ月あたりの提供票作成時間（分）": String(Math.floor(Math.random() * 300)),
+        "1ヶ月あたりの実績確認時間（分）": String(Math.floor(Math.random() * 300))
+      });
+    } else {
+      dummyData.push({
+        "タイムスタンプ": new Date().toISOString(),
+        "事業所名を入力してください": `ダミー事業所 ${i + 1}`,
+        "事業所番号を入力してください": `45000${i + 1}`,
+        "氏名を入力してください": `テスト太郎 ${i + 1}`,
+        "利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）": String(Math.floor(Math.random() * 120)),
+        "ケアマネ全体の利用者（契約者数）": String(Math.floor(Math.random() * 50)),
+        "うち、訪問系サービスのみ利用の方": String(Math.floor(Math.random() * 20)),
+        "うち、通所系サービスのみ利用の方": String(Math.floor(Math.random() * 20)),
+        "うち、入所系サービスのみ利用の方": String(Math.floor(Math.random() * 10)),
+        "うち、複数サービス（訪問＋通所など）利用の方": String(Math.floor(Math.random() * 20)),
+        "うち、福祉用具貸与のみ利用の方": String(Math.floor(Math.random() * 10))
+      });
+    }
+  }
+  
   return dummyData;
 }
 
-// 共有方法ごとの時間を集計する関数
+/**
+ * 共有方法ごとの時間を集計する関数
+ * @param {Array} data - CSVデータの配列
+ * @returns {Object} - 集計結果
+ */
 export function aggregateSharingTimes(data) {
-  console.log("データ集計を開始します");
+  // 集計用のオブジェクト
+  const result = {
+    // 提供票作成時間の集計
+    creationTime: {
+      total: 0,
+      count: 0,
+      avg: 0
+    },
+    // 実績確認時間の集計
+    confirmationTime: {
+      total: 0,
+      count: 0,
+      avg: 0
+    },
+    // 修正時間の集計
+    modificationTime: {
+      total: 0,
+      count: 0,
+      avg: 0
+    }
+  };
   
+  // データが存在しない場合は空の結果を返す
   if (!data || data.length === 0) {
-    console.warn("集計対象のデータがありません。ダミーデータを使用します。");
-    return {
-      "手渡し": 2.0,
-      "郵送": 3.0,
-      "FAX": 1.5,
-      "メール": 1.0,
-      "チャット": 0.5,
-      "国保中央会連携": 0.25,
-      "その他連携": 0.75
-    };
+    return result;
   }
   
-  // 集計結果を格納するオブジェクト
-  const result = {
-    "手渡し": 0,
-    "郵送": 0,
-    "FAX": 0,
-    "メール": 0,
-    "チャット": 0,
-    "国保中央会連携": 0,
-    "その他連携": 0
-  };
+  // 提供票作成時間のキーワード
+  const creationTimeKeys = [
+    '1ヶ月あたりの提供票作成時間（分）',
+    '提供票作成時間',
+    '提供票作成',
+    '作成時間'
+  ];
   
-  // ヘッダーのキーワードマッピング（様々な表記のバリエーションに対応）
-  const headerKeywords = {
-    "手渡し": ["手渡し", "手渡", "直接", "対面", "手で渡す", "直接渡す", "手渡し時間"],
-    "郵送": ["郵送", "郵便", "ゆうびん", "郵送時間", "郵送にかかる時間", "ポスト", "投函", "郵便局"],
-    "FAX": ["FAX", "ファックス", "ふぁっくす", "FAX時間", "ファックス時間", "ＦＡＸ", "fax"],
-    "メール": ["メール", "電子メール", "Eメール", "めーる", "メール時間", "E-mail", "email", "mail", "メーリング"],
-    "チャット": ["チャット", "LINE", "ライン", "メッセンジャー", "チャットツール", "SNS", "メッセージ", "チャット時間"],
-    "国保中央会連携": ["国保中央会", "国保連", "こくほ", "国保中央会連携", "国保連携", "ケアプランデータ連携", "伝送", "電子請求"],
-    "その他連携": ["その他", "他", "そのた", "その他時間", "その他連携", "介護ソフト", "システム連携", "API", "データ連携", "クラウド"]
-  };
+  // 実績確認時間のキーワード
+  const confirmationTimeKeys = [
+    '1ヶ月あたりの実績確認時間（分）',
+    '実績確認時間',
+    '実績確認',
+    '確認時間'
+  ];
   
-  // 各データ行を処理
-  data.forEach((row, index) => {
-    // デバッグ: 最初の行のキーを確認
-    if (index === 0) {
-      console.log('最初の行のキー:', Object.keys(row));
+  // 修正時間のキーワード
+  const modificationTimeKeys = [
+    '利用者からのケアプラン修正依頼を受けてから修正完了までに要する時間（分）',
+    'ケアプラン修正時間',
+    '修正時間',
+    '修正完了時間'
+  ];
+  
+  // 各行のデータを処理
+  data.forEach(row => {
+    // 提供票作成時間を集計
+    for (const key of creationTimeKeys) {
+      if (row[key] && !isNaN(parseFloat(row[key]))) {
+        const value = parseFloat(row[key]);
+        result.creationTime.total += value;
+        result.creationTime.count++;
+        break;
+      }
     }
     
-    // 各共有方法について、対応するヘッダーを検索して値を集計
-    Object.entries(headerKeywords).forEach(([key, keywords]) => {
-      // 対応するヘッダーを検索（完全一致または部分一致）
-      const matchingHeaders = Object.keys(row).filter(header => 
-        keywords.some(keyword => 
-          header === keyword || // 完全一致
-          header.includes(keyword) || // 部分一致
-          // 正規表現を使った柔軟なマッチング
-          new RegExp(keyword, 'i').test(header)
-        )
-      );
-      
-      if (matchingHeaders.length > 0) {
-        matchingHeaders.forEach(matchingHeader => {
-          console.log(`"${key}" に一致するヘッダー: "${matchingHeader}"`);
-          const value = row[matchingHeader];
-          
-          // 数値に変換して集計（分単位から時間単位に変換: 60分 = 1時間）
-          if (typeof value === 'number' && !isNaN(value)) {
-            result[key] += value / 60; // 分から時間に変換
-          } else if (typeof value === 'string' && value.trim() !== '') {
-            // 文字列から数値を抽出（「30分」のような表記にも対応）
-            const numValue = parseFloat(value.replace(/[^0-9.]/g, ''));
-            if (!isNaN(numValue)) {
-              // 単位を判断（時間または分）
-              const isHours = value.includes('時間') || value.includes('hour') || value.includes('h');
-              result[key] += isHours ? numValue : numValue / 60;
-            }
-          }
-        });
+    // 実績確認時間を集計
+    for (const key of confirmationTimeKeys) {
+      if (row[key] && !isNaN(parseFloat(row[key]))) {
+        const value = parseFloat(row[key]);
+        result.confirmationTime.total += value;
+        result.confirmationTime.count++;
+        break;
       }
-    });
+    }
     
-    // 時間に関するキーワードを含むが、上記のカテゴリに分類されないフィールドも処理
-    Object.keys(row).forEach(key => {
-      if ((key.includes('時間') || key.includes('分') || key.includes('秒') || key.includes('作業')) && 
-          typeof row[key] === 'number' && !isNaN(row[key])) {
-        
-        // 各キーワードに対して再度チェック（部分一致）
-        if (key.match(/手渡|直接|対面/i)) {
-          console.log(`追加チェックで "手渡し" に一致するヘッダー: "${key}"`);
-          result['手渡し'] += row[key] / 60;
-        } else if (key.match(/郵送|郵便|ポスト|投函/i)) {
-          console.log(`追加チェックで "郵送" に一致するヘッダー: "${key}"`);
-          result['郵送'] += row[key] / 60;
-        } else if (key.match(/FAX|ファックス|ＦＡＸ/i)) {
-          console.log(`追加チェックで "FAX" に一致するヘッダー: "${key}"`);
-          result['FAX'] += row[key] / 60;
-        } else if (key.match(/メール|mail|メーリング/i)) {
-          console.log(`追加チェックで "メール" に一致するヘッダー: "${key}"`);
-          result['メール'] += row[key] / 60;
-        } else if (key.match(/チャット|LINE|ライン|メッセンジャー|SNS/i)) {
-          console.log(`追加チェックで "チャット" に一致するヘッダー: "${key}"`);
-          result['チャット'] += row[key] / 60;
-        } else if (key.match(/国保中央会|国保連|ケアプランデータ連携|伝送|電子請求/i)) {
-          console.log(`追加チェックで "国保中央会連携" に一致するヘッダー: "${key}"`);
-          result['国保中央会連携'] += row[key] / 60;
-        } else if (key.match(/その他|介護ソフト|システム連携|API|データ連携|クラウド/i)) {
-          console.log(`追加チェックで "その他連携" に一致するヘッダー: "${key}"`);
-          result['その他連携'] += row[key] / 60;
-        }
+    // 修正時間を集計
+    for (const key of modificationTimeKeys) {
+      if (row[key] && !isNaN(parseFloat(row[key]))) {
+        const value = parseFloat(row[key]);
+        result.modificationTime.total += value;
+        result.modificationTime.count++;
+        break;
       }
-    });
+    }
   });
   
-  // 集計結果を小数点第1位に丸める
-  Object.keys(result).forEach(key => {
-    result[key] = Math.round(result[key] * 10) / 10;
+  // 平均値を計算
+  if (result.creationTime.count > 0) {
+    result.creationTime.avg = result.creationTime.total / result.creationTime.count;
+  }
+  
+  if (result.confirmationTime.count > 0) {
+    result.confirmationTime.avg = result.confirmationTime.total / result.confirmationTime.count;
+  }
+  
+  if (result.modificationTime.count > 0) {
+    result.modificationTime.avg = result.modificationTime.total / result.modificationTime.count;
+  }
+  
+  return result;
+}
+
+/**
+ * 利用者数の集計を行う関数
+ * @param {Array} data - CSVデータの配列
+ * @returns {Object} - 集計結果
+ */
+export function aggregateUserCounts(data) {
+  // 集計用のオブジェクト
+  const result = {
+    totalUsers: {
+      total: 0,
+      count: 0,
+      avg: 0
+    },
+    visitOnly: {
+      total: 0,
+      count: 0,
+      avg: 0
+    },
+    dayServiceOnly: {
+      total: 0,
+      count: 0,
+      avg: 0
+    },
+    facilityOnly: {
+      total: 0,
+      count: 0,
+      avg: 0
+    },
+    multipleServices: {
+      total: 0,
+      count: 0,
+      avg: 0
+    },
+    equipmentOnly: {
+      total: 0,
+      count: 0,
+      avg: 0
+    }
+  };
+  
+  // データが存在しない場合は空の結果を返す
+  if (!data || data.length === 0) {
+    return result;
+  }
+  
+  // 利用者数のキーワード
+  const totalUsersKeys = [
+    'ケアマネ全体の利用者（契約者数）',
+    '利用者数',
+    '契約者数',
+    '全体の利用者'
+  ];
+  
+  // 訪問系サービスのみの利用者数のキーワード
+  const visitOnlyKeys = [
+    'うち、訪問系サービスのみ利用の方',
+    '訪問系サービスのみ',
+    '訪問系のみ'
+  ];
+  
+  // 通所系サービスのみの利用者数のキーワード
+  const dayServiceOnlyKeys = [
+    'うち、通所系サービスのみ利用の方',
+    '通所系サービスのみ',
+    '通所系のみ'
+  ];
+  
+  // 入所系サービスのみの利用者数のキーワード
+  const facilityOnlyKeys = [
+    'うち、入所系サービスのみ利用の方',
+    '入所系サービスのみ',
+    '入所系のみ'
+  ];
+  
+  // 複数サービス利用の利用者数のキーワード
+  const multipleServicesKeys = [
+    'うち、複数サービス（訪問＋通所など）利用の方',
+    '複数サービス利用',
+    '複数サービス'
+  ];
+  
+  // 福祉用具貸与のみの利用者数のキーワード
+  const equipmentOnlyKeys = [
+    'うち、福祉用具貸与のみ利用の方',
+    '福祉用具貸与のみ',
+    '福祉用具のみ'
+  ];
+  
+  // 各行のデータを処理
+  data.forEach(row => {
+    // 全体の利用者数を集計
+    for (const key of totalUsersKeys) {
+      if (row[key] && !isNaN(parseFloat(row[key]))) {
+        const value = parseFloat(row[key]);
+        result.totalUsers.total += value;
+        result.totalUsers.count++;
+        break;
+      }
+    }
+    
+    // 訪問系サービスのみの利用者数を集計
+    for (const key of visitOnlyKeys) {
+      if (row[key] && !isNaN(parseFloat(row[key]))) {
+        const value = parseFloat(row[key]);
+        result.visitOnly.total += value;
+        result.visitOnly.count++;
+        break;
+      }
+    }
+    
+    // 通所系サービスのみの利用者数を集計
+    for (const key of dayServiceOnlyKeys) {
+      if (row[key] && !isNaN(parseFloat(row[key]))) {
+        const value = parseFloat(row[key]);
+        result.dayServiceOnly.total += value;
+        result.dayServiceOnly.count++;
+        break;
+      }
+    }
+    
+    // 入所系サービスのみの利用者数を集計
+    for (const key of facilityOnlyKeys) {
+      if (row[key] && !isNaN(parseFloat(row[key]))) {
+        const value = parseFloat(row[key]);
+        result.facilityOnly.total += value;
+        result.facilityOnly.count++;
+        break;
+      }
+    }
+    
+    // 複数サービス利用の利用者数を集計
+    for (const key of multipleServicesKeys) {
+      if (row[key] && !isNaN(parseFloat(row[key]))) {
+        const value = parseFloat(row[key]);
+        result.multipleServices.total += value;
+        result.multipleServices.count++;
+        break;
+      }
+    }
+    
+    // 福祉用具貸与のみの利用者数を集計
+    for (const key of equipmentOnlyKeys) {
+      if (row[key] && !isNaN(parseFloat(row[key]))) {
+        const value = parseFloat(row[key]);
+        result.equipmentOnly.total += value;
+        result.equipmentOnly.count++;
+        break;
+      }
+    }
   });
   
-  console.log("集計結果:", result);
+  // 平均値を計算
+  if (result.totalUsers.count > 0) {
+    result.totalUsers.avg = result.totalUsers.total / result.totalUsers.count;
+  }
   
-  // 全ての値が0の場合はダミーデータを返す
-  const allZeros = Object.values(result).every(val => val === 0);
-  if (allZeros) {
-    console.warn("集計結果が全て0です。ダミーデータを使用します。");
-    return {
-      "手渡し": 2.0,
-      "郵送": 3.0,
-      "FAX": 1.5,
-      "メール": 1.0,
-      "チャット": 0.5,
-      "国保中央会連携": 0.25,
-      "その他連携": 0.75
-    };
+  if (result.visitOnly.count > 0) {
+    result.visitOnly.avg = result.visitOnly.total / result.visitOnly.count;
+  }
+  
+  if (result.dayServiceOnly.count > 0) {
+    result.dayServiceOnly.avg = result.dayServiceOnly.total / result.dayServiceOnly.count;
+  }
+  
+  if (result.facilityOnly.count > 0) {
+    result.facilityOnly.avg = result.facilityOnly.total / result.facilityOnly.count;
+  }
+  
+  if (result.multipleServices.count > 0) {
+    result.multipleServices.avg = result.multipleServices.total / result.multipleServices.count;
+  }
+  
+  if (result.equipmentOnly.count > 0) {
+    result.equipmentOnly.avg = result.equipmentOnly.total / result.equipmentOnly.count;
   }
   
   return result;
