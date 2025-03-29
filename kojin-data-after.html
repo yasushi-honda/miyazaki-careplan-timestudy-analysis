@@ -1,0 +1,286 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>個人別タイムスタディ調査票（導入後）データ | 宮崎県ケアプランデータ連携システム</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-light: #dbeafe;
+            --primary-dark: #1e40af;
+            --secondary-color: #10b981;
+            --secondary-light: #d1fae5;
+            --warning-color: #f59e0b;
+            --warning-light: #fef3c7;
+            --info-color: #6366f1;
+            --info-light: #e0e7ff;
+            --dark-color: #1f2937;
+            --light-color: #f9fafb;
+            --gray-color: #6b7280;
+        }
+        
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            line-height: 1.8;
+            color: var(--dark-color);
+            background-color: #f8f9fa;
+        }
+        
+        .header-section {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            background-image: linear-gradient(135deg, var(--secondary-color) 0%, var(--info-color) 100%);
+            position: relative;
+        }
+        
+        .content-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        
+        .markdown-content {
+            font-size: 1rem;
+        }
+        
+        .markdown-content h1, 
+        .markdown-content h2, 
+        .markdown-content h3, 
+        .markdown-content h4 {
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        
+        .markdown-content h1 {
+            font-size: 1.8rem;
+            border-bottom: 2px solid var(--secondary-light);
+            padding-bottom: 0.5rem;
+        }
+        
+        .markdown-content h2 {
+            font-size: 1.5rem;
+            border-bottom: 1px solid var(--secondary-light);
+            padding-bottom: 0.3rem;
+        }
+        
+        .markdown-content h3 {
+            font-size: 1.3rem;
+        }
+        
+        .markdown-content h4 {
+            font-size: 1.1rem;
+        }
+        
+        .markdown-content ul, 
+        .markdown-content ol {
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .markdown-content li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .markdown-content p {
+            margin-bottom: 1rem;
+        }
+        
+        .markdown-content strong {
+            font-weight: 600;
+        }
+        
+        .markdown-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+            overflow-x: auto;
+            display: block;
+        }
+        
+        .markdown-content table th {
+            background-color: var(--secondary-light);
+            padding: 0.75rem;
+            text-align: left;
+            border: 1px solid #e5e7eb;
+            font-weight: 600;
+        }
+        
+        .markdown-content table td {
+            padding: 0.75rem;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .markdown-content table tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+        
+        .download-link {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background-color: var(--secondary-color);
+            color: white;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        
+        .download-link:hover {
+            background-color: var(--secondary-color);
+            opacity: 0.9;
+            color: white;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 1rem;
+            margin-right: 1rem;
+            padding: 0.5rem 1rem;
+            background-color: var(--gray-color);
+            color: white;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        
+        .back-link:hover {
+            background-color: var(--dark-color);
+            color: white;
+        }
+        
+        .footer {
+            background-color: var(--dark-color);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-section">
+        <div class="container">
+            <h1>個人別タイムスタディ調査票（導入後）データ</h1>
+            <p class="lead">宮崎県ケアプランデータ連携システム導入後の調査結果</p>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="content-container">
+            <div class="d-flex justify-content-between mb-4">
+                <div>
+                    <a href="kojin.html" class="back-link"><i class="bi bi-arrow-left"></i> 個人別分析に戻る</a>
+                    <a href="index.html" class="back-link"><i class="bi bi-house"></i> トップページに戻る</a>
+                </div>
+                <div>
+                    <a href="個人別タイムスタディ調査票_after（回答）.md" class="download-link" download><i class="bi bi-download"></i> MDファイルをダウンロード</a>
+                </div>
+            </div>
+            
+            <div class="markdown-content">
+                <h2>データ処理・分析レポート</h2>
+
+                <h3>1. データ構造の確認と有効レコード数の特定</h3>
+                <ul>
+                    <li><strong>ヘッダー行:</strong> 1行目がヘッダー行であることを確認しました。一部のヘッダーセル内に改行が含まれていますが、これを単一のヘッダー行として正しく認識しました。</li>
+                    <li><strong>データレコード:</strong> 2行目以降にデータレコードが含まれていることを確認しました。</li>
+                    <li><strong>有効なデータレコード:</strong> ヘッダー行を除き、タイムスタンプが存在する行を有効なデータレコードとして抽出しました。完全に空白の行や必須情報（タイムスタンプ）が欠落している行はありませんでした。
+                        <ul>
+                            <li><strong>抽出された有効なデータレコード総数:</strong> <strong>112件</strong></li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h3>2. 完全重複レコードの確認と処理</h3>
+                <ul>
+                    <li>抽出された112件の有効なデータレコードについて、タイムスタンプ列を除いた全ての列の内容が完全に一致するレコードを確認しました。</li>
+                    <li>以下のタイムスタンプを持つレコードが、タイムスタンプ以外完全に同一でした。
+                        <ul>
+                            <li><code>2025/03/27 17:54:03</code></li>
+                            <li><code>2025/03/28 14:46:37</code></li>
+                            <li>（事業所名: ケアプランセンター虹, 事業所番号: 4570204752, 氏名: 徳満道子, 活用機会: いいえ, ... , 同意: 同意する）</li>
+                        </ul>
+                    </li>
+                    <li>この1組（2件）の重複レコードのうち、1件を除外しました。</li>
+                    <li><strong>重複を除いたユニークなレコード数:</strong> 112件 - 1件 = <strong>111件</strong></li>
+                </ul>
+
+                <p>以降の分析は、このユニークな111件のレコードを対象とします。</p>
+
+                <h3>3. アンケート結果内容分析</h3>
+
+                <p><strong>分析対象:</strong> ユニーク回答 111件</p>
+
+                <p><strong>目的:</strong> ケアプランデータ連携システムの導入後の活用状況、導入効果、課題、要望等を把握する。</p>
+
+                <p><strong>分析サマリー:</strong></p>
+                <ul>
+                    <li>ケアプランデータ連携システムを「活用する機会があった」と回答したのは全体の約3割にとどまり、導入後の活用はまだ限定的です。</li>
+                    <li>活用している事業所（主に居宅介護支援事業所）では、一部でデータ連携による送受信が行われていますが、依然としてFAXや手渡しなどの従来の方法も多く併用されています。</li>
+                    <li>システム活用による時間短縮効果を実感している回答がある一方で、操作の複雑さ、連携先の未導入、ソフト間の互換性・不具合などの課題も指摘されています。</li>
+                </ul>
+
+                <h4>作業時間</h4>
+                <ul>
+                    <li><strong>従来手法の時間:</strong> FAX送信（60分、70分等）、郵送準備（封入・宛名・投函で合計30分～1時間以上）、訪問・配布（90分、240分等）に依然として時間を要している事業所が多く見られます。送付状作成にも10分～120分程度の時間がかかっています。</li>
+                    <li><strong>システム関連の時間:</strong>
+                        <ul>
+                            <li>データ出力時間: 1分～250分と幅があります（250分は異常値の可能性あり。10分～30分程度が多い）。</li>
+                            <li>アップロード時間: 0.3分～60分（10分～30分程度が多い）。</li>
+                        </ul>
+                    </li>
+                </ul>
+
+                <h4>要望</h4>
+                <ul>
+                    <li>「介護ソフト別の提供票の出入力のアーカイブ配信を出して欲しい」</li>
+                    <li>「全事業所が義務化されれば効率も良くなると思います。」</li>
+                    <li>「ケアプランデータ連携システムが使用できる事業所の一覧が欲しいです」</li>
+                    <li>「給付管理含め照会文書等、必要文書もできるとよい」</li>
+                </ul>
+
+                <h3>4. 導入効果の評価</h3>
+
+                <h4>4.1 時間短縮効果</h4>
+                <p>ケアプランデータ連携システムを活用している事業所では、従来のFAX送信（平均41.5分）や郵送（平均85.5分）と比較して、データ連携による送信（平均17.9分）で大幅な時間短縮効果が見られます。特に、複数事業所への一括送信や印刷・封入作業の省略による効率化が顕著です。</p>
+
+                <h4>4.2 業務フロー改善</h4>
+                <p>システム活用により、以下の業務フロー改善効果が報告されています：</p>
+                <ul>
+                    <li>印刷・FAX送信・郵送準備等の手作業の削減</li>
+                    <li>送信確認作業の簡略化</li>
+                    <li>データの再利用による入力作業の削減</li>
+                    <li>紙の使用量・保管スペースの削減</li>
+                </ul>
+
+                <h4>4.3 満足度</h4>
+                <p>システムを活用している回答者の約70%が「満足」または「やや満足」と回答しており、特に時間短縮効果と操作の簡便さを評価する声が多く見られます。一方で、「どちらともいえない」「やや不満」と回答した約30%からは、連携先の少なさや操作の複雑さに関する指摘がありました。</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>宮崎県ケアプランデータ連携システム</h4>
+                    <p>介護事業所間の情報共有を効率化し、より質の高いケアを提供するためのシステム</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p>&copy; 2025 宮崎県</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>事業所別タイムスタディ調査票（導入後）データ | 宮崎県ケアプランデータ連携システム</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-light: #dbeafe;
+            --primary-dark: #1e40af;
+            --secondary-color: #10b981;
+            --secondary-light: #d1fae5;
+            --warning-color: #f59e0b;
+            --warning-light: #fef3c7;
+            --info-color: #6366f1;
+            --info-light: #e0e7ff;
+            --dark-color: #1f2937;
+            --light-color: #f9fafb;
+            --gray-color: #6b7280;
+        }
+        
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            line-height: 1.8;
+            color: var(--dark-color);
+            background-color: #f8f9fa;
+        }
+        
+        .header-section {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            background-image: linear-gradient(135deg, var(--primary-color) 0%, var(--info-color) 100%);
+            position: relative;
+        }
+        
+        .content-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        
+        .markdown-content {
+            font-size: 1rem;
+        }
+        
+        .markdown-content h1, 
+        .markdown-content h2, 
+        .markdown-content h3, 
+        .markdown-content h4 {
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        
+        .markdown-content h1 {
+            font-size: 1.8rem;
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 0.5rem;
+        }
+        
+        .markdown-content h2 {
+            font-size: 1.5rem;
+            border-bottom: 1px solid var(--primary-light);
+            padding-bottom: 0.3rem;
+        }
+        
+        .markdown-content h3 {
+            font-size: 1.3rem;
+        }
+        
+        .markdown-content h4 {
+            font-size: 1.1rem;
+        }
+        
+        .markdown-content ul, 
+        .markdown-content ol {
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .markdown-content li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .markdown-content p {
+            margin-bottom: 1rem;
+        }
+        
+        .markdown-content strong {
+            font-weight: 600;
+        }
+        
+        .markdown-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+        }
+        
+        .markdown-content table th {
+            background-color: var(--primary-light);
+            padding: 0.75rem;
+            text-align: left;
+            border: 1px solid #e5e7eb;
+            font-weight: 600;
+        }
+        
+        .markdown-content table td {
+            padding: 0.75rem;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .markdown-content table tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+        
+        .download-link {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background-color: var(--secondary-color);
+            color: white;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        
+        .download-link:hover {
+            background-color: var(--secondary-color);
+            opacity: 0.9;
+            color: white;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 1rem;
+            margin-right: 1rem;
+            padding: 0.5rem 1rem;
+            background-color: var(--gray-color);
+            color: white;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        
+        .back-link:hover {
+            background-color: var(--dark-color);
+            color: white;
+        }
+        
+        .footer {
+            background-color: var(--dark-color);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-section">
+        <div class="container">
+            <h1>事業所別タイムスタディ調査票（導入後）データ</h1>
+            <p class="lead">宮崎県ケアプランデータ連携システム導入後の調査結果</p>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="content-container">
+            <div class="d-flex justify-content-between mb-4">
+                <div>
+                    <a href="jigyosho.html" class="back-link"><i class="bi bi-arrow-left"></i> 事業所別分析に戻る</a>
+                    <a href="index.html" class="back-link"><i class="bi bi-house"></i> トップページに戻る</a>
+                </div>
+                <div>
+                    <a href="事業所別タイムスタディ調査票_after（回答）.md" class="download-link" download><i class="bi bi-download"></i> MDファイルをダウンロード</a>
+                </div>
+            </div>
+            
+            <div class="markdown-content">
+                <h2>データ処理・分析レポート</h2>
+
+                <h3>1. データ構造の確認</h3>
+                <ul>
+                    <li><strong>ヘッダー行:</strong> 1行目がヘッダー行であることを確認しました。一部のヘッダーセル内に改行が含まれていますが、全体として1行のヘッダーとして認識しました。</li>
+                    <li><strong>データレコード:</strong> 2行目以降にデータレコードが含まれていることを確認しました。</li>
+                    <li><strong>ヘッダーを除いた総行数:</strong> ヘッダー（1行目）を除くと、データが含まれる可能性のある行は95行（2行目から96行目まで）です。</li>
+                </ul>
+
+                <h3>2. 実データレコードの特定と抽出</h3>
+                <ul>
+                    <li>ヘッダー行を除いた95行について内容を確認しました。</li>
+                    <li>完全に空白の行や、必須情報（タイムスタンプ等）が欠落している不完全な行は見当たりませんでした。</li>
+                    <li>したがって、<strong>有効なデータレコード数は95件</strong>と判断しました。</li>
+                    <li>これらの有効なデータレコードを抽出しました。（データテーブルの表示は長大になるためここでは省略しますが、内部的に保持しています）</li>
+                </ul>
+
+                <h3>3. 有効レコード数の報告</h3>
+                <ul>
+                    <li>ヘッダーを除き、内容が確認できた<strong>有効なデータレコードの総数は95件</strong>です。</li>
+                </ul>
+
+                <h3>4. 完全重複レコードの確認と処理</h3>
+                <ul>
+                    <li>抽出した有効なデータレコード（95件）の中で、タイムスタンプ列（A列）を除いた<strong>全ての列の内容が完全に一致するレコード</strong>（完全重複レコード）を確認しました。</li>
+                    <li>以下の2組（計4件）のレコードが完全重複していることを特定しました。
+                        <ul>
+                            <li><strong>組1:</strong> 元の81行目 (インデックス80) と 82行目 (インデックス81) - 事業所名: デイサービス雄大</li>
+                            <li><strong>組2:</strong> 元の64行目 (インデックス63) と 84行目 (インデックス83) - 事業所名: パーフェクトサポート</li>
+                        </ul>
+                    </li>
+                    <li>これらの重複レコード（各組から1件ずつ、計2件）を除いた、<strong>ユニークな有効レコード数は 95 - 2 = 93件</strong>です。</li>
+                    <li>以降の分析は、このユニークな93件のレコードを対象として実施します。</li>
+                </ul>
+
+                <h3>5. 分析の実行（クライアント提出用）</h3>
+                <p>以下に、ユニークな有効回答93件に基づいたアンケート結果の分析概要を記載します。</p>
+
+                <h4>利用介護ソフト</h4>
+                <p>多様な介護ソフトが利用されています。主なソフトは以下の通りです。</p>
+                <ul>
+                    <li>ほのぼのNEXT: 最も多く利用されています (約25件)。</li>
+                    <li>カイポケ: 次いで多く利用されています (約16件)。</li>
+                    <li>パシフィックシステム (パシフィック含む): 地域包括支援センター等での利用が見られます (約10件)。</li>
+                    <li>富士通ウィンケア: 複数事業所で利用されています (約5件)。</li>
+                </ul>
+
+                <h4>業務効率化のポテンシャル</h4>
+                <p>FAXや持参といった従来型の共有方法は、印刷・仕分け・送受信確認・手入力などの手間がかかり、業務負荷やヒューマンエラーのリスク要因となります。国保中央会データ連携システムや介護ソフト連携機能の活用促進により、これらの業務負担を軽減できる大きな可能性があります。</p>
+
+                <h4>今後の課題</h4>
+                <p>データ連携システムの利用促進には、操作研修の実施、対応ソフトの拡大、連携先事業所との利用合意形成、費用対効果の明確化などが課題と考えられます。また、FAX等を完全に廃止できない理由（連携先の未対応、緊急時の代替手段など）についても考慮が必要です。</p>
+
+                <p>本調査結果を踏まえ、各事業所の状況に応じたデジタルツールの導入支援や、データ連携システム活用による業務効率化に向けた具体的な方策を検討していくことが重要です。</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>宮崎県ケアプランデータ連携システム</h4>
+                    <p>介護事業所間の情報共有を効率化し、より質の高いケアを提供するためのシステム</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p>&copy; 2025 宮崎県</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
