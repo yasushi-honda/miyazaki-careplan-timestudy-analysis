@@ -82,34 +82,82 @@ function loadInitialData() {
 
 // 現在のデータタイプに応じたデータを読み込む
 function loadDataForCurrentType() {
+    console.log(`${currentDataType}タイプのデータを読み込み中...`);
+    
     // ローディング表示
     showLoading(true);
     
-    console.log(`データ読み込み開始: ${currentDataType}`);
+    // 前処理済みJSONファイルのパスを設定
+    const beforeJsonPath = `data/processed/${currentDataType}_before.json`;
+    const afterJsonPath = `data/processed/${currentDataType}_after.json`;
     
-    // 導入前後のデータを読み込み
-    Promise.all([
-        loadCsvData(`data/${currentDataType}_before.csv`),
-        loadCsvData(`data/${currentDataType}_after.csv`)
-    ])
-    .then(([beforeData, afterData]) => {
-        console.log("データ読み込み成功:", beforeData.length, afterData.length);
-        
-        // データを保存
-        currentData.before = beforeData;
-        currentData.after = afterData;
-        
-        // データを表示
-        displayData();
-        
-        // ローディング非表示
-        showLoading(false);
-    })
-    .catch(error => {
-        console.error("データ読み込みエラー:", error);
-        alert("データの読み込みに失敗しました。詳細はコンソールを確認してください。");
-        showLoading(false);
-    });
+    // 前処理済みJSONファイルが存在する場合はそれを使用し、存在しない場合はCSVを使用
+    checkFileExists(beforeJsonPath)
+        .then(jsonExists => {
+            if (jsonExists) {
+                console.log(`前処理済みJSONファイルを使用: ${beforeJsonPath}`);
+                return loadJsonData(beforeJsonPath);
+            } else {
+                console.log(`JSONファイルが見つからないため、CSVファイルを使用: ${currentDataType}_before.csv`);
+                return loadCsvData(`data/${currentDataType}_before.csv`);
+            }
+        })
+        .then(beforeData => {
+            currentData.before = beforeData;
+            console.log(`導入前データ読み込み完了: ${beforeData.length}件`);
+            
+            return checkFileExists(afterJsonPath)
+                .then(jsonExists => {
+                    if (jsonExists) {
+                        console.log(`前処理済みJSONファイルを使用: ${afterJsonPath}`);
+                        return loadJsonData(afterJsonPath);
+                    } else {
+                        console.log(`JSONファイルが見つからないため、CSVファイルを使用: ${currentDataType}_after.csv`);
+                        return loadCsvData(`data/${currentDataType}_after.csv`);
+                    }
+                });
+        })
+        .then(afterData => {
+            currentData.after = afterData;
+            console.log(`導入後データ読み込み完了: ${afterData.length}件`);
+            
+            // データの表示
+            displayData();
+            
+            // ローディング非表示
+            showLoading(false);
+        })
+        .catch(error => {
+            console.error(`データ読み込みエラー: ${error}`);
+            alert("データの読み込みに失敗しました。詳細はコンソールを確認してください。");
+            showLoading(false);
+        });
+}
+
+// ファイルが存在するかチェック
+function checkFileExists(url) {
+    return fetch(url, { method: 'HEAD' })
+        .then(response => response.ok)
+        .catch(() => false);
+}
+
+// JSONファイルを読み込む
+function loadJsonData(filePath) {
+    return fetch(filePath)
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log(`JSONファイル読み込み完了: ${data.length}行のデータを取得`);
+            if (data.length > 0) {
+                console.log("サンプルデータ:", data[0]);
+                console.log("利用可能なカラム:", Object.keys(data[0]));
+            }
+            return data;
+        });
 }
 
 // ローディング表示の切り替え
