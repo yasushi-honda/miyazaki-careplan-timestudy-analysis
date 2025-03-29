@@ -25,9 +25,18 @@ function setupEventListeners() {
     const typeButtons = document.querySelectorAll('.btn-group button[data-type]');
     typeButtons.forEach(button => {
         button.addEventListener('click', function() {
-            // 以前のアクティブボタンからアクティブクラスを削除
-            document.querySelector('.btn-group button.active').classList.remove('active', 'btn-primary');
-            document.querySelector('.btn-group button.active').classList.add('btn-outline-primary');
+            // すでにアクティブなボタンの場合は何もしない
+            if (this.classList.contains('active')) {
+                return;
+            }
+            
+            // 他のすべてのボタンからアクティブクラスを削除
+            typeButtons.forEach(btn => {
+                if (btn !== this && btn.classList.contains('active')) {
+                    btn.classList.remove('active', 'btn-primary');
+                    btn.classList.add('btn-outline-primary');
+                }
+            });
             
             // 新しいボタンをアクティブにする
             this.classList.remove('btn-outline-primary');
