@@ -40,14 +40,15 @@
             margin-bottom: 2.5rem;
             padding: 2rem;
             background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
             transition: transform 0.3s, box-shadow 0.3s;
+            border: 1px solid rgba(0, 0, 0, 0.05);
         }
         
         .section:hover {
             transform: translateY(-5px);
-            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.12);
         }
         
         .section h2 {
@@ -55,58 +56,199 @@
             margin-bottom: 1.5rem;
             padding-bottom: 0.75rem;
             border-bottom: 2px solid #dbeafe;
+            font-size: 1.75rem;
+            position: relative;
+        }
+        
+        .section h2:after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            width: 80px;
+            height: 2px;
+            background-color: #2563eb;
         }
 
         /* データカードのスタイル */
         .data-card {
             background-color: white;
-            border-radius: 8px;
-            padding: 1.5rem;
+            border-radius: 12px;
+            padding: 1.75rem;
             margin-bottom: 1.5rem;
-            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
-            transition: transform 0.3s, box-shadow 0.3s;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
             border-left: 4px solid transparent;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .data-card:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.1), transparent);
         }
         
         .data-card:hover {
             transform: translateY(-5px);
-            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.12);
         }
         
         .data-card-primary {
             border-left-color: #2563eb;
         }
         
+        .data-card-primary:before {
+            background: linear-gradient(90deg, transparent, rgba(37, 99, 235, 0.2), transparent);
+        }
+        
         .data-card-secondary {
             border-left-color: #10b981;
+        }
+        
+        .data-card-secondary:before {
+            background: linear-gradient(90deg, transparent, rgba(16, 185, 129, 0.2), transparent);
         }
         
         .data-card-warning {
             border-left-color: #f59e0b;
         }
         
+        .data-card-warning:before {
+            background: linear-gradient(90deg, transparent, rgba(245, 158, 11, 0.2), transparent);
+        }
+        
+        .data-card h3 {
+            color: #1e40af;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            font-size: 1.35rem;
+        }
+        
+        .data-card p {
+            color: #4b5563;
+            margin-bottom: 0.75rem;
+        }
+        
+        /* 数値表示のスタイル */
+        .stat-value {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2563eb;
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
+        }
+        
+        .stat-label {
+            font-size: 1rem;
+            color: #6b7280;
+            margin-bottom: 1rem;
+        }
+        
+        .stat-change {
+            font-size: 1.1rem;
+            font-weight: 500;
+            margin-top: 0.5rem;
+        }
+        
+        .stat-change.positive {
+            color: #10b981;
+        }
+        
+        .stat-change.negative {
+            color: #ef4444;
+        }
+
         /* ハイライトボックス */
         .highlight-box {
             background-color: #f0f9ff;
-            border-radius: 8px;
-            padding: 1.5rem;
+            border-radius: 12px;
+            padding: 1.75rem;
             margin: 1.5rem 0;
             border-left: 4px solid #2563eb;
+            position: relative;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+        }
+        
+        .highlight-box:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, rgba(37, 99, 235, 0.05) 0%, transparent 100%);
+            border-radius: 12px;
         }
         
         .highlight-box h4 {
             color: #1e40af;
             margin-bottom: 1rem;
+            font-weight: 600;
+            position: relative;
         }
         
         .highlight-box ul {
+            margin-bottom: 0;
+            position: relative;
+        }
+        
+        .highlight-box ul li {
+            margin-bottom: 0.5rem;
+            padding-left: 0.5rem;
+        }
+        
+        .highlight-box ul li:last-child {
+            margin-bottom: 0;
+        }
+        
+        /* 提案・効果カード */
+        .suggestion-card {
+            background-color: white;
+            border-radius: 12px;
+            padding: 1.75rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .suggestion-card.primary {
+            border-left: 4px solid #2563eb;
+        }
+        
+        .suggestion-card.warning {
+            border-left: 4px solid #f59e0b;
+        }
+        
+        .suggestion-card h3 {
+            color: #1e40af;
+            margin-bottom: 1rem;
+            font-weight: 600;
+            font-size: 1.35rem;
+        }
+        
+        .suggestion-card ul {
+            padding-left: 1.5rem;
+            margin-bottom: 0;
+        }
+        
+        .suggestion-card ul li {
+            margin-bottom: 0.75rem;
+        }
+        
+        .suggestion-card ul li:last-child {
             margin-bottom: 0;
         }
         
         /* ボタンスタイルの改善 */
         .btn {
             padding: 0.6rem 1.5rem;
-            border-radius: 6px;
+            border-radius: 8px;
             font-weight: 500;
             transition: all 0.3s;
         }
@@ -280,14 +422,18 @@
                 </div>
                 <div class="col-md-4">
                     <div class="data-card data-card-primary">
-                        <h4>連携システム利用率</h4>
-                        <div class="key-figure">45%</div>
-                        <p>導入前: 25% → 導入後: 45%</p>
+                        <h3>連携システム利用率</h3>
+                        <div class="stat-value">45%</div>
+                        <div class="stat-change positive">
+                            <i class="fas fa-arrow-up"></i> 導入前: 25% → 導入後: 45%
+                        </div>
+                        <p>国保中央会ケアプランデータ連携システムの利用率が大幅に向上しました。</p>
                     </div>
-                    <div class="data-card data-card-success">
-                        <h4>業務時間削減</h4>
-                        <div class="key-figure">57%</div>
-                        <p>FAX送信と比較した時間削減率</p>
+                    <div class="data-card data-card-secondary">
+                        <h3>業務時間削減</h3>
+                        <div class="stat-value">57%</div>
+                        <div class="stat-label">FAX送信と比較した時間削減率</div>
+                        <p>従来のFAX送信方式と比較して、大幅な業務時間の削減を実現しています。</p>
                     </div>
                 </div>
             </div>
@@ -463,8 +609,8 @@
                 </div>
                 <div class="col-md-6">
                     <h3>今後の展望と提言</h3>
-                    <div class="data-card data-card-info">
-                        <h4>普及促進策</h4>
+                    <div class="suggestion-card primary">
+                        <h3>普及促進策</h3>
                         <ul>
                             <li>連携システム利用事業所リストの提供</li>
                             <li>操作マニュアルの充実と研修機会の提供</li>
@@ -472,8 +618,9 @@
                             <li>導入・運用サポート体制の構築</li>
                         </ul>
                     </div>
-                    <div class="data-card data-card-warning">
-                        <h4>期待される効果（全事業所導入時）</h4>
+                    
+                    <div class="suggestion-card warning">
+                        <h3>期待される効果（全事業所導入時）</h3>
                         <p>全事業所がシステムを導入・活用した場合、以下の効果が期待できます：</p>
                         <ul>
                             <li>FAX送信業務の大幅削減（年間約50%の時間削減）</li>
