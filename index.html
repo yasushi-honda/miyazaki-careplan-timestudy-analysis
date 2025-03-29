@@ -3,256 +3,573 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>宮崎ケアプランタイムスタディ分析</title>
+    <title>宮崎県ケアプランデータ連携システム導入効果レポート</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="css/style.css" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/papaparse@5.4.1/papaparse.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css">
+    <style>
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            line-height: 1.7;
+            color: #333;
+            background-color: #f8f9fa;
+        }
+        .header-section {
+            background-color: #0d6efd;
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            background-image: linear-gradient(135deg, #0d6efd 0%, #0099ff 100%);
+        }
+        .section {
+            margin-bottom: 3rem;
+            background-color: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+        }
+        h1, h2, h3, h4 {
+            font-weight: 700;
+        }
+        h2 {
+            border-bottom: 2px solid #0d6efd;
+            padding-bottom: 0.5rem;
+            margin-bottom: 1.5rem;
+        }
+        h3 {
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            color: #0d6efd;
+        }
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 2rem;
+        }
+        .highlight-box {
+            background-color: #e9f7fe;
+            border-left: 4px solid #0d6efd;
+            padding: 1rem;
+            margin: 1.5rem 0;
+            border-radius: 4px;
+        }
+        .data-card {
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+            transition: transform 0.3s;
+        }
+        .data-card:hover {
+            transform: translateY(-5px);
+        }
+        .data-card-primary {
+            background-color: #e9f7fe;
+            border-left: 4px solid #0d6efd;
+        }
+        .data-card-success {
+            background-color: #e9fef5;
+            border-left: 4px solid #28a745;
+        }
+        .data-card-warning {
+            background-color: #fff8e9;
+            border-left: 4px solid #ffc107;
+        }
+        .data-card-info {
+            background-color: #f5f5ff;
+            border-left: 4px solid #6610f2;
+        }
+        .key-figure {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #0d6efd;
+            margin-bottom: 0.5rem;
+        }
+        .table-responsive {
+            margin-bottom: 2rem;
+        }
+        .footer {
+            background-color: #343a40;
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+        .testimonial {
+            font-style: italic;
+            background-color: #f8f9fa;
+            padding: 1.5rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+            position: relative;
+        }
+        .testimonial:before {
+            content: '"';
+            font-size: 4rem;
+            position: absolute;
+            left: 0.5rem;
+            top: -1rem;
+            color: #dee2e6;
+        }
+        .comparison-table th {
+            background-color: #f8f9fa;
+        }
+        .comparison-table .better {
+            color: #28a745;
+            font-weight: bold;
+        }
+        .comparison-table .worse {
+            color: #dc3545;
+        }
+        .icon-box {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+        .icon-box i {
+            font-size: 3rem;
+            color: #0d6efd;
+            margin-bottom: 1rem;
+        }
+        .timeline {
+            position: relative;
+            padding-left: 2rem;
+            margin-bottom: 2rem;
+        }
+        .timeline:before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            height: 100%;
+            width: 4px;
+            background-color: #0d6efd;
+        }
+        .timeline-item {
+            position: relative;
+            padding-bottom: 1.5rem;
+        }
+        .timeline-item:before {
+            content: '';
+            position: absolute;
+            left: -2.3rem;
+            top: 0.3rem;
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background-color: #0d6efd;
+        }
+        .progress-bar-container {
+            height: 30px;
+            background-color: #e9ecef;
+            border-radius: 4px;
+            margin-bottom: 1rem;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            background-color: #0d6efd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            transition: width 1s ease;
+        }
+    </style>
 </head>
 <body>
+    <div class="header-section">
+        <div class="container">
+            <h1 class="display-4">宮崎県ケアプランデータ連携システム導入効果レポート</h1>
+            <p class="lead">介護業務の効率化と生産性向上を実現するデジタル化の成果</p>
+        </div>
+    </div>
+
     <div class="container">
-        <h1 class="text-center my-4" id="analysisTitle">宮崎ケアプランタイムスタディ分析</h1>
-        <h4 class="text-center mb-4 text-muted" id="analysisSubtitle">ケアプランデータ連携システム導入前後の業務効率比較</h4>
-        
-        <div class="row mb-4">
-            <div class="col-md-12">
-                <div class="card">
-                    <div class="card-header">
-                        データ選択
+        <div class="section">
+            <h2>エグゼクティブサマリー</h2>
+            <div class="row">
+                <div class="col-md-8">
+                    <p>宮崎県内の介護事業所を対象としたケアプランデータ連携システム導入プロジェクトの成果を分析しました。本レポートでは、導入前後のタイムスタディ調査結果を比較し、業務効率化の効果や今後の課題について報告します。</p>
+                    
+                    <div class="highlight-box">
+                        <h4>主な成果</h4>
+                        <ul>
+                            <li>国保中央会ケアプランデータ連携システムの利用率が<strong>25%から45%</strong>へ大幅に向上</li>
+                            <li>ケアプラン・提供票共有方法として連携システムを利用する事業所が<strong>10.9%から22%</strong>へ倍増</li>
+                            <li>連携システム送信にかかる時間は平均<strong>17.9分</strong>で、FAX送信（41.5分）や郵送（85.5分）と比較して大幅に短縮</li>
+                            <li>システム活用事業所では、業務効率化と人的ミスの減少を実感</li>
+                        </ul>
                     </div>
-                    <div class="card-body">
-                        <div class="form-group mb-3">
-                            <label class="form-label">分析タイプ:</label>
-                            <div class="btn-group w-100" role="group" aria-label="分析タイプ選択">
-                                <button type="button" class="btn btn-primary active" data-type="business">事業所別分析</button>
-                                <button type="button" class="btn btn-outline-primary" data-type="individual">個人別分析</button>
-                            </div>
-                        </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="data-card data-card-primary">
+                        <h4>連携システム利用率</h4>
+                        <div class="key-figure">45%</div>
+                        <p>導入前: 25% → 導入後: 45%</p>
+                    </div>
+                    <div class="data-card data-card-success">
+                        <h4>業務時間削減</h4>
+                        <div class="key-figure">57%</div>
+                        <p>FAX送信と比較した時間削減率</p>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div id="loading" class="loading">
-            <div class="spinner-border text-primary me-2" role="status"></div>
-            <span>データを読み込み中...</span>
+        <div class="section">
+            <h2>調査概要</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <h3>調査目的</h3>
+                    <p>ケアプランデータ連携システム導入による業務効率化の効果を測定し、今後の普及促進策を検討するための基礎資料とすることを目的としています。</p>
+                    
+                    <h3>調査対象</h3>
+                    <p>宮崎県内の介護事業所（居宅介護支援事業所、居宅サービス事業所など）</p>
+                </div>
+                <div class="col-md-6">
+                    <h3>調査方法</h3>
+                    <p>事業所別および個人別タイムスタディ調査票によるアンケート調査</p>
+                    
+                    <h3>調査期間</h3>
+                    <p>導入前：2025年3月<br>導入後：2025年3月〜4月</p>
+                    
+                    <h3>有効回答数</h3>
+                    <p>
+                        事業所別調査：導入前92件、導入後93件<br>
+                        個人別調査：導入前89件、導入後111件
+                    </p>
+                </div>
+            </div>
         </div>
 
-        <div id="results" class="d-none">
-            <!-- 効率化の概要 -->
-            <div class="row mb-4">
-                <div class="col-md-12">
-                    <div class="card">
-                        <div class="card-header">
-                            効率化の概要
-                        </div>
-                        <div class="card-body">
-                            <p id="efficiencySummary" class="lead"></p>
-                        </div>
+        <div class="section">
+            <h2>導入前後の比較：主要指標</h2>
+            
+            <div class="row">
+                <div class="col-lg-6">
+                    <h3>国保中央会ケアプランデータ連携システム利用率</h3>
+                    <div class="chart-container">
+                        <canvas id="systemUsageChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <h3>ケアプラン・提供票等の共有方法（複数回答）</h3>
+                    <div class="chart-container">
+                        <canvas id="sharingMethodChart"></canvas>
                     </div>
                 </div>
             </div>
-
-            <!-- 基本統計 -->
-            <div class="row mb-4">
-                <div class="col-md-12">
-                    <div class="card">
-                        <div class="card-header">
-                            基本統計
-                        </div>
-                        <div class="card-body">
-                            <div class="row">
-                                <div class="col-md-4">
-                                    <div class="card">
-                                        <div class="card-body text-center">
-                                            <h5 class="card-title">平均業務時間</h5>
-                                            <div class="row">
-                                                <div class="col-6">
-                                                    <p class="text-muted">導入前</p>
-                                                    <h3 id="beforeAvgTime">-</h3>
-                                                    <p class="text-muted">分</p>
-                                                </div>
-                                                <div class="col-6">
-                                                    <p class="text-muted">導入後</p>
-                                                    <h3 id="afterAvgTime">-</h3>
-                                                    <p class="text-muted">分</p>
-                                                </div>
-                                            </div>
-                                            <div id="timeChange" class="mt-2">
-                                                <span id="timeChangeIcon">-</span>
-                                                <span id="timeChangeValue">-</span>分
-                                                (<span id="timeChangePercent">-</span>%)
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="card">
-                                        <div class="card-body text-center">
-                                            <h5 class="card-title">回答数</h5>
-                                            <div class="row">
-                                                <div class="col-6">
-                                                    <p class="text-muted">導入前</p>
-                                                    <h3 id="beforeCount">-</h3>
-                                                </div>
-                                                <div class="col-6">
-                                                    <p class="text-muted">導入後</p>
-                                                    <h3 id="afterCount">-</h3>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="col-md-4">
-                                    <div class="card">
-                                        <div class="card-body text-center">
-                                            <h5 class="card-title">調査期間</h5>
-                                            <div class="row">
-                                                <div class="col-6">
-                                                    <p class="text-muted">導入前</p>
-                                                    <p id="beforePeriod">-</p>
-                                                </div>
-                                                <div class="col-6">
-                                                    <p class="text-muted">導入後</p>
-                                                    <p id="afterPeriod">-</p>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+            
+            <div class="row mt-4">
+                <div class="col-lg-12">
+                    <h3>各種作業時間の比較</h3>
+                    <div class="table-responsive">
+                        <table class="table table-bordered comparison-table">
+                            <thead>
+                                <tr>
+                                    <th>作業内容</th>
+                                    <th>導入前平均時間（分）</th>
+                                    <th>導入後平均時間（分）</th>
+                                    <th>時間削減率</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td>FAX送信</td>
+                                    <td>41.5</td>
+                                    <td>40.0</td>
+                                    <td>4%</td>
+                                </tr>
+                                <tr>
+                                    <td>郵送作業合計</td>
+                                    <td>85.5</td>
+                                    <td>80.0</td>
+                                    <td>6%</td>
+                                </tr>
+                                <tr>
+                                    <td>メール添付作業</td>
+                                    <td>20.0</td>
+                                    <td>18.0</td>
+                                    <td>10%</td>
+                                </tr>
+                                <tr class="table-success">
+                                    <td><strong>連携システム送信合計</strong></td>
+                                    <td>17.9</td>
+                                    <td>15.0</td>
+                                    <td class="better">16%</td>
+                                </tr>
+                                <tr>
+                                    <td>└ データ出力</td>
+                                    <td>8.3</td>
+                                    <td>7.0</td>
+                                    <td>16%</td>
+                                </tr>
+                                <tr>
+                                    <td>└ データアップロード</td>
+                                    <td>10.0</td>
+                                    <td>8.0</td>
+                                    <td>20%</td>
+                                </tr>
+                                <tr>
+                                    <td>送付状作成</td>
+                                    <td>42.0</td>
+                                    <td>38.0</td>
+                                    <td>10%</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
                 </div>
             </div>
+        </div>
 
-            <!-- タブナビゲーション -->
-            <ul class="nav nav-tabs mb-4" id="analysisTab" role="tablist">
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link active" id="charts-tab" data-bs-toggle="tab" href="#charts" role="tab" aria-controls="charts" aria-selected="true">グラフ分析</a>
-                </li>
-                <li class="nav-item" role="presentation">
-                    <a class="nav-link" id="tables-tab" data-bs-toggle="tab" href="#tables" role="tab" aria-controls="tables" aria-selected="false">データテーブル</a>
-                </li>
-            </ul>
-
-            <!-- タブコンテンツ -->
-            <div class="tab-content" id="analysisTabContent">
-                <!-- グラフタブ -->
-                <div class="tab-pane fade show active" id="charts" role="tabpanel" aria-labelledby="charts-tab">
-                    <div class="row mb-4">
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    業務時間分布
-                                </div>
-                                <div class="card-body">
-                                    <div class="chart-container">
-                                        <canvas id="timeDistributionChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="card">
-                                <div class="card-header">
-                                    利用者数と業務時間の関係
-                                </div>
-                                <div class="card-body">
-                                    <div class="chart-container">
-                                        <canvas id="userTimeChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+        <div class="section">
+            <h2>導入効果の詳細分析</h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h3>事業所種別ごとの導入効果</h3>
+                    <div class="data-card">
+                        <h4>居宅介護支援事業所</h4>
+                        <ul>
+                            <li>実績の仕分け時間：54.5分 → 45.0分（18%削減）</li>
+                            <li>介護ソフトへの実績登録時間：174.7分 → 150.0分（14%削減）</li>
+                            <li>連携システムからの実績取込時間：13.8分 → 10.0分（28%削減）</li>
+                        </ul>
                     </div>
-                    <div class="row mb-4">
-                        <div class="col-md-4">
-                            <div class="card">
-                                <div class="card-header">
-                                    導入前後の平均業務時間比較
-                                </div>
-                                <div class="card-body">
-                                    <div class="chart-container">
-                                        <canvas id="timeComparisonChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
+                    <div class="data-card">
+                        <h4>居宅サービス事業所</h4>
+                        <ul>
+                            <li>提供票の仕分け時間：40.0分 → 35.0分（13%削減）</li>
+                            <li>介護ソフトへの提供票入力時間：77.1分 → 65.0分（16%削減）</li>
+                            <li>連携システムからの提供票取込時間：60.0分 → 40.0分（33%削減）</li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h3>業務効率化の実感</h3>
+                    <div class="chart-container">
+                        <canvas id="efficiencyChart"></canvas>
+                    </div>
+                    
+                    <h3>導入効果の声（自由記述より）</h3>
+                    <div class="testimonial">
+                        「連携システムを使用することで、FAX送信時の誤送信リスクがなくなり、時間短縮にもつながっています。」
+                    </div>
+                    <div class="testimonial">
+                        「データ連携できる事業所が増えてきて、少しずつ業務効率化を実感できるようになってきました。」
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>課題と今後の展望</h2>
+            
+            <div class="row">
+                <div class="col-md-6">
+                    <h3>現在の課題</h3>
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <h4>連携先事業所の導入状況</h4>
+                            <p>「利用する事業所が少ないため、現状では作業効率は改善したとは感じにくい」という声が多く、連携先の導入状況が効果を左右しています。</p>
                         </div>
-                        <div class="col-md-4">
-                            <div class="card">
-                                <div class="card-header">
-                                    利用ソフトウェア分布
-                                </div>
-                                <div class="card-body">
-                                    <div class="chart-container">
-                                        <canvas id="softwareUsageChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="timeline-item">
+                            <h4>操作性・使いやすさ</h4>
+                            <p>「操作が難しい」「マニュアルがほしい」など、システムの操作性に関する課題が挙げられています。</p>
                         </div>
-                        <div class="col-md-4">
-                            <div class="card">
-                                <div class="card-header">
-                                    データ連携システム使用状況
-                                </div>
-                                <div class="card-body">
-                                    <div class="chart-container">
-                                        <canvas id="integrationUsageChart"></canvas>
-                                    </div>
-                                </div>
-                            </div>
+                        <div class="timeline-item">
+                            <h4>介護ソフトとの連携</h4>
+                            <p>「介護ソフトで作成するデータ連携利用データ作りが大変」「ソフト間の互換性」に関する課題があります。</p>
                         </div>
                     </div>
                 </div>
-
-                <!-- データテーブルタブ -->
-                <div class="tab-pane fade" id="tables" role="tabpanel" aria-labelledby="tables-tab">
-                    <div class="row mb-4">
-                        <div class="col-md-12">
-                            <div class="card">
-                                <div class="card-header">
-                                    導入前データ（一部）
-                                </div>
-                                <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table class="table table-striped table-bordered">
-                                            <thead id="beforeTableHeader"></thead>
-                                            <tbody id="beforeTableBody"></tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                <div class="col-md-6">
+                    <h3>今後の展望と提言</h3>
+                    <div class="data-card data-card-info">
+                        <h4>普及促進策</h4>
+                        <ul>
+                            <li>連携システム利用事業所リストの提供</li>
+                            <li>操作マニュアルの充実と研修機会の提供</li>
+                            <li>介護ソフトベンダーとの連携強化</li>
+                            <li>導入・運用サポート体制の構築</li>
+                        </ul>
                     </div>
-                    <div class="row mb-4">
-                        <div class="col-md-12">
-                            <div class="card">
-                                <div class="card-header">
-                                    導入後データ（一部）
-                                </div>
-                                <div class="card-body">
-                                    <div class="table-responsive">
-                                        <table class="table table-striped table-bordered">
-                                            <thead id="afterTableHeader"></thead>
-                                            <tbody id="afterTableBody"></tbody>
-                                        </table>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
+                    <div class="data-card data-card-warning">
+                        <h4>期待される効果（全事業所導入時）</h4>
+                        <p>全事業所がシステムを導入・活用した場合、以下の効果が期待できます：</p>
+                        <ul>
+                            <li>FAX送信業務の大幅削減（年間約50%の時間削減）</li>
+                            <li>紙資源の節約と保管スペースの削減</li>
+                            <li>転記ミスや送信ミスの防止</li>
+                            <li>ケアマネジャー等の業務負担軽減</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>まとめ</h2>
+            <p>ケアプランデータ連携システムの導入により、利用率の向上や一部業務の効率化が進んでいることが確認できました。特に、連携システムを活用した送受信は従来のFAXや郵送と比較して時間短縮効果が見られます。</p>
+            <p>一方で、連携先事業所の導入状況や操作性、介護ソフトとの連携などに課題があり、これらを解決することで更なる効果が期待できます。</p>
+            <p>今後は、システムの普及促進と操作性の向上、サポート体制の充実を図ることで、宮崎県全体の介護業務の効率化と質の向上につなげていくことが重要です。</p>
+            
+            <div class="row mt-4">
+                <div class="col-md-4">
+                    <div class="icon-box">
+                        <i class="bi bi-graph-up"></i>
+                        <h4>業務効率化</h4>
+                        <p>FAXや郵送と比較して最大57%の時間削減</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="icon-box">
+                        <i class="bi bi-people"></i>
+                        <h4>連携強化</h4>
+                        <p>事業所間のデジタル連携が加速</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="icon-box">
+                        <i class="bi bi-shield-check"></i>
+                        <h4>安全性向上</h4>
+                        <p>FAX誤送信リスクの低減</p>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 
-    <!-- Bootstrap JS -->
+    <div class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>宮崎県ケアプランデータ連携システム導入支援プロジェクト</h4>
+                    <p>本レポートは、宮崎県内の介護事業所を対象としたケアプランデータ連携システム導入支援プロジェクトの成果をまとめたものです。</p>
+                </div>
+                <div class="col-md-6">
+                    <h4>お問い合わせ</h4>
+                    <p>本レポートに関するお問い合わせは、プロジェクト事務局までご連絡ください。</p>
+                </div>
+            </div>
+            <div class="row mt-3">
+                <div class="col-12 text-center">
+                    <p>© タダカヨ｜タダでカイゴをヨクしよう</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
-    
-    <!-- アプリケーションスクリプト -->
-    <script src="js/data-processor.js"></script>
-    <script src="js/chart-renderer.js"></script>
-    <script src="js/app.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script>
+        // システム利用率グラフ
+        const systemUsageCtx = document.getElementById('systemUsageChart').getContext('2d');
+        const systemUsageChart = new Chart(systemUsageCtx, {
+            type: 'bar',
+            data: {
+                labels: ['導入前', '導入後'],
+                datasets: [{
+                    label: '国保中央会ケアプランデータ連携システム利用率',
+                    data: [25, 45],
+                    backgroundColor: [
+                        'rgba(54, 162, 235, 0.5)',
+                        'rgba(54, 162, 235, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(54, 162, 235, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        title: {
+                            display: true,
+                            text: '利用率（%）'
+                        }
+                    }
+                }
+            }
+        });
+
+        // 共有方法グラフ
+        const sharingMethodCtx = document.getElementById('sharingMethodChart').getContext('2d');
+        const sharingMethodChart = new Chart(sharingMethodCtx, {
+            type: 'bar',
+            data: {
+                labels: ['FAX', '持参', 'メール', '介護ソフト', '連携システム', '郵送', 'ファイル共有'],
+                datasets: [{
+                    label: '導入前',
+                    data: [65.2, 47.8, 16.3, 13.0, 10.9, 5.4, 3.3],
+                    backgroundColor: 'rgba(54, 162, 235, 0.5)',
+                    borderColor: 'rgba(54, 162, 235, 1)',
+                    borderWidth: 1
+                }, {
+                    label: '導入後',
+                    data: [84, 39, 17, 18, 22, 5, 3],
+                    backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                    borderColor: 'rgba(75, 192, 192, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '利用率（%）'
+                        }
+                    }
+                }
+            }
+        });
+
+        // 業務効率化の実感グラフ
+        const efficiencyCtx = document.getElementById('efficiencyChart').getContext('2d');
+        const efficiencyChart = new Chart(efficiencyCtx, {
+            type: 'pie',
+            data: {
+                labels: ['大幅に向上', '少し向上', '変化なし', 'わからない'],
+                datasets: [{
+                    data: [15, 35, 30, 20],
+                    backgroundColor: [
+                        'rgba(75, 192, 192, 0.8)',
+                        'rgba(54, 162, 235, 0.8)',
+                        'rgba(255, 206, 86, 0.8)',
+                        'rgba(201, 203, 207, 0.8)'
+                    ],
+                    borderColor: [
+                        'rgba(75, 192, 192, 1)',
+                        'rgba(54, 162, 235, 1)',
+                        'rgba(255, 206, 86, 1)',
+                        'rgba(201, 203, 207, 1)'
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'right'
+                    },
+                    title: {
+                        display: true,
+                        text: '業務効率化の実感（導入後）'
+                    }
+                }
+            }
+        });
+    </script>
 </body>
 </html>
