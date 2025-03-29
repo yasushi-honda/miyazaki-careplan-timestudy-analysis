@@ -172,7 +172,7 @@ function displayData() {
         console.error("グラフ描画エラー:", error);
     }
     
-    // データテーブルの表示
+    // データテーブルを表示
     displayDataTables();
 }
 
@@ -306,47 +306,87 @@ function getDatesFromData(data) {
 
 // データテーブルを表示
 function displayDataTables() {
-    // 導入前データテーブル
-    const beforeTableData = generateTableData(currentData.before, 5);
-    const beforeTableHeader = document.getElementById('beforeTableHeader');
-    const beforeTableBody = document.getElementById('beforeTableBody');
-    
-    let beforeHeaderRow = '<tr>';
-    beforeTableData.headers.forEach(header => {
-        beforeHeaderRow += `<th>${header}</th>`;
-    });
-    beforeHeaderRow += '</tr>';
-    beforeTableHeader.innerHTML = beforeHeaderRow;
-    
-    let beforeRows = '';
-    for (let i = 0; i < beforeTableData.rows.length; i++) {
-        beforeRows += '<tr>';
-        beforeTableData.rows[i].forEach(cell => {
-            beforeRows += `<td>${cell}</td>`;
-        });
-        beforeRows += '</tr>';
+    try {
+        console.log("データテーブル表示処理を開始");
+        
+        // 導入前データテーブル
+        const beforeTableData = generateTableData(currentData.before, 5);
+        console.log("導入前テーブルデータ:", beforeTableData);
+        
+        const beforeTableHeader = document.getElementById('beforeTableHeader');
+        const beforeTableBody = document.getElementById('beforeTableBody');
+        
+        if (!beforeTableData || !beforeTableData.headers || !beforeTableData.rows) {
+            console.error("導入前テーブルデータが不正です");
+            beforeTableHeader.innerHTML = '<tr><th>データがありません</th></tr>';
+            beforeTableBody.innerHTML = '<tr><td>表示するデータがありません</td></tr>';
+        } else {
+            let beforeHeaderRow = '<tr>';
+            beforeTableData.headers.forEach(header => {
+                beforeHeaderRow += `<th>${header}</th>`;
+            });
+            beforeHeaderRow += '</tr>';
+            beforeTableHeader.innerHTML = beforeHeaderRow;
+            
+            let beforeRows = '';
+            for (let i = 0; i < beforeTableData.rows.length; i++) {
+                beforeRows += '<tr>';
+                // rows[i]が配列であることを確認
+                if (Array.isArray(beforeTableData.rows[i])) {
+                    beforeTableData.rows[i].forEach(cell => {
+                        beforeRows += `<td>${cell}</td>`;
+                    });
+                } else {
+                    // オブジェクトの場合は値を取得
+                    beforeTableData.headers.forEach(header => {
+                        beforeRows += `<td>${beforeTableData.rows[i][header] || ''}</td>`;
+                    });
+                }
+                beforeRows += '</tr>';
+            }
+            beforeTableBody.innerHTML = beforeRows;
+        }
+        
+        // 導入後データテーブル
+        const afterTableData = generateTableData(currentData.after, 5);
+        console.log("導入後テーブルデータ:", afterTableData);
+        
+        const afterTableHeader = document.getElementById('afterTableHeader');
+        const afterTableBody = document.getElementById('afterTableBody');
+        
+        if (!afterTableData || !afterTableData.headers || !afterTableData.rows) {
+            console.error("導入後テーブルデータが不正です");
+            afterTableHeader.innerHTML = '<tr><th>データがありません</th></tr>';
+            afterTableBody.innerHTML = '<tr><td>表示するデータがありません</td></tr>';
+        } else {
+            let afterHeaderRow = '<tr>';
+            afterTableData.headers.forEach(header => {
+                afterHeaderRow += `<th>${header}</th>`;
+            });
+            afterHeaderRow += '</tr>';
+            afterTableHeader.innerHTML = afterHeaderRow;
+            
+            let afterRows = '';
+            for (let i = 0; i < afterTableData.rows.length; i++) {
+                afterRows += '<tr>';
+                // rows[i]が配列であることを確認
+                if (Array.isArray(afterTableData.rows[i])) {
+                    afterTableData.rows[i].forEach(cell => {
+                        afterRows += `<td>${cell}</td>`;
+                    });
+                } else {
+                    // オブジェクトの場合は値を取得
+                    afterTableData.headers.forEach(header => {
+                        afterRows += `<td>${afterTableData.rows[i][header] || ''}</td>`;
+                    });
+                }
+                afterRows += '</tr>';
+            }
+            afterTableBody.innerHTML = afterRows;
+        }
+        
+        console.log("データテーブル表示処理が完了しました");
+    } catch (error) {
+        console.error("データテーブル表示中にエラーが発生しました:", error);
     }
-    beforeTableBody.innerHTML = beforeRows;
-    
-    // 導入後データテーブル
-    const afterTableData = generateTableData(currentData.after, 5);
-    const afterTableHeader = document.getElementById('afterTableHeader');
-    const afterTableBody = document.getElementById('afterTableBody');
-    
-    let afterHeaderRow = '<tr>';
-    afterTableData.headers.forEach(header => {
-        afterHeaderRow += `<th>${header}</th>`;
-    });
-    afterHeaderRow += '</tr>';
-    afterTableHeader.innerHTML = afterHeaderRow;
-    
-    let afterRows = '';
-    for (let i = 0; i < afterTableData.rows.length; i++) {
-        afterRows += '<tr>';
-        afterTableData.rows[i].forEach(cell => {
-            afterRows += `<td>${cell}</td>`;
-        });
-        afterRows += '</tr>';
-    }
-    afterTableBody.innerHTML = afterRows;
 }

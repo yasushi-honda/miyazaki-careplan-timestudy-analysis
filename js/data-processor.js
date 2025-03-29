@@ -19,7 +19,9 @@ function loadCsvData(filePath) {
             skipEmptyLines: true,
             transformHeader: function(header) {
                 // ヘッダーの改行を空白に置き換え
-                return header.replace(/\n/g, ' ');
+                const cleanedHeader = header.replace(/\n/g, ' ').trim();
+                console.log(`ヘッダー変換: "${header}" -> "${cleanedHeader}"`);
+                return cleanedHeader;
             },
             complete: function(results) {
                 console.log(`CSVファイル読み込み完了: ${results.data.length}行のデータを取得`);
@@ -157,13 +159,27 @@ function generateTimeDistributionData(data) {
     const possibleTimeColumns = [
         '業務時間を入力してください。',
         '業務時間（分）',
-        '業務にかかった時間（分）を入力してください。'
+        '業務にかかった時間（分）を入力してください。',
+        '業務にかかった時間（分）を入力してください'
     ];
     
+    // 完全一致で検索
     for (const col of possibleTimeColumns) {
         if (data[0] && data[0].hasOwnProperty(col)) {
             timeColumn = col;
             break;
+        }
+    }
+    
+    // 完全一致で見つからない場合は部分一致で検索
+    if (!timeColumn) {
+        const allColumns = data[0] ? Object.keys(data[0]) : [];
+        for (const col of allColumns) {
+            if (col.includes('業務時間') || col.includes('かかった時間')) {
+                timeColumn = col;
+                console.log(`部分一致で業務時間カラムを検出: ${timeColumn}`);
+                break;
+            }
         }
     }
     
@@ -181,7 +197,7 @@ function generateTimeDistributionData(data) {
         });
     } else {
         console.warn("業務時間カラムが見つかりませんでした");
-        console.log("利用可能なカラム:", Object.keys(data[0]));
+        console.log("利用可能なカラム:", data[0] ? Object.keys(data[0]) : "データなし");
     }
     
     return { labels: timeRanges, data: timeCounts };
@@ -189,6 +205,13 @@ function generateTimeDistributionData(data) {
 
 // 利用者数と業務時間の関係データを生成
 function generateUserTimeData(data, type) {
+    console.log(`利用者数と業務時間の関係データ生成開始: ${type}`);
+    
+    if (!data || data.length === 0) {
+        console.warn("データが空です");
+        return { users: [], times: [] };
+    }
+    
     // カラム名を特定
     let userCountColumn = '';
     let timeColumn = '';
@@ -200,10 +223,23 @@ function generateUserTimeData(data, type) {
             '利用者数を入力してください。'
         ];
         
+        // 完全一致で検索
         for (const col of possibleUserCountColumns) {
-            if (data[0].hasOwnProperty(col)) {
+            if (data[0] && data[0].hasOwnProperty(col)) {
                 userCountColumn = col;
                 break;
+            }
+        }
+        
+        // 部分一致で検索
+        if (!userCountColumn && data[0]) {
+            const allColumns = Object.keys(data[0]);
+            for (const col of allColumns) {
+                if (col.includes('利用者数') || col.includes('要介護')) {
+                    userCountColumn = col;
+                    console.log(`部分一致で利用者数カラムを検出: ${userCountColumn}`);
+                    break;
+                }
             }
         }
     } else if (type === 'individual') {
@@ -213,10 +249,23 @@ function generateUserTimeData(data, type) {
             '担当している利用者数を入力してください。'
         ];
         
+        // 完全一致で検索
         for (const col of possibleUserCountColumns) {
-            if (data[0].hasOwnProperty(col)) {
+            if (data[0] && data[0].hasOwnProperty(col)) {
                 userCountColumn = col;
                 break;
+            }
+        }
+        
+        // 部分一致で検索
+        if (!userCountColumn && data[0]) {
+            const allColumns = Object.keys(data[0]);
+            for (const col of allColumns) {
+                if (col.includes('担当') && col.includes('利用者数')) {
+                    userCountColumn = col;
+                    console.log(`部分一致で担当利用者数カラムを検出: ${userCountColumn}`);
+                    break;
+                }
             }
         }
     }
@@ -224,13 +273,28 @@ function generateUserTimeData(data, type) {
     const possibleTimeColumns = [
         '業務時間を入力してください。',
         '業務時間（分）',
+        '業務にかかった時間（分）を入力してください。',
+        '業務にかかった時間（分）を入力してください',
         '業務にかかった時間（分）を入力してください。'
     ];
     
+    // 完全一致で検索
     for (const col of possibleTimeColumns) {
         if (data[0] && data[0].hasOwnProperty(col)) {
             timeColumn = col;
             break;
+        }
+    }
+    
+    // 部分一致で検索
+    if (!timeColumn && data[0]) {
+        const allColumns = Object.keys(data[0]);
+        for (const col of allColumns) {
+            if (col.includes('業務時間') || col.includes('かかった時間')) {
+                timeColumn = col;
+                console.log(`部分一致で業務時間カラムを検出: ${timeColumn}`);
+                break;
+            }
         }
     }
     
@@ -271,10 +335,11 @@ function generateComparisonData(beforeData, afterData, type) {
     const possibleTimeColumns = [
         '業務時間を入力してください。',
         '業務時間（分）',
-        '業務にかかった時間（分）を入力してください。'
+        '業務にかかった時間（分）を入力してください。',
+        '業務にかかった時間（分）を入力してください'
     ];
     
-    // 導入前データの業務時間カラムを特定
+    // 導入前データの業務時間カラムを特定 - 完全一致
     for (const col of possibleTimeColumns) {
         if (beforeData[0] && beforeData[0].hasOwnProperty(col)) {
             timeColumnBefore = col;
@@ -282,11 +347,35 @@ function generateComparisonData(beforeData, afterData, type) {
         }
     }
     
-    // 導入後データの業務時間カラムを特定
+    // 導入前データの業務時間カラムを特定 - 部分一致
+    if (!timeColumnBefore && beforeData[0]) {
+        const allColumns = Object.keys(beforeData[0]);
+        for (const col of allColumns) {
+            if (col.includes('業務時間') || col.includes('かかった時間')) {
+                timeColumnBefore = col;
+                console.log(`部分一致で導入前業務時間カラムを検出: ${timeColumnBefore}`);
+                break;
+            }
+        }
+    }
+    
+    // 導入後データの業務時間カラムを特定 - 完全一致
     for (const col of possibleTimeColumns) {
         if (afterData[0] && afterData[0].hasOwnProperty(col)) {
             timeColumnAfter = col;
             break;
+        }
+    }
+    
+    // 導入後データの業務時間カラムを特定 - 部分一致
+    if (!timeColumnAfter && afterData[0]) {
+        const allColumns = Object.keys(afterData[0]);
+        for (const col of allColumns) {
+            if (col.includes('業務時間') || col.includes('かかった時間')) {
+                timeColumnAfter = col;
+                console.log(`部分一致で導入後業務時間カラムを検出: ${timeColumnAfter}`);
+                break;
+            }
         }
     }
     
