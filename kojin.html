@@ -1,0 +1,443 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>個人別タイムスタディ分析 | 宮崎県ケアプランデータ連携システム</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* メインのCSSスタイル - index.htmlと同じスタイルを使用 */
+        :root {
+            --primary-color: #2563eb;
+            --primary-light: #dbeafe;
+            --primary-dark: #1e40af;
+            --secondary-color: #10b981;
+            --secondary-light: #d1fae5;
+            --warning-color: #f59e0b;
+            --warning-light: #fef3c7;
+            --info-color: #6366f1;
+            --info-light: #e0e7ff;
+            --dark-color: #1f2937;
+            --light-color: #f9fafb;
+            --gray-color: #6b7280;
+            --transition-speed: 0.3s;
+        }
+        
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            line-height: 1.8;
+            color: var(--dark-color);
+            background-color: #f8f9fa;
+            overflow-x: hidden;
+        }
+        
+        /* スクロールバーのカスタマイズ */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+        
+        /* ヘッダーセクション */
+        .header-section {
+            background-color: var(--secondary-color);
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2.5rem;
+            background-image: linear-gradient(135deg, var(--secondary-color) 0%, var(--info-color) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMTI4MCAxNDAiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iI2ZmZmZmZiI+PHBhdGggZD0iTTEyODAgMy40QzEwNTAuNTkgMTggMTAxOS40IDg0Ljg5IDczNC40MiA4NC44OWMtMzIwIDAtMzIwLTg0LjMtNjQwLTg0LjNDNTkuNC41OSAyOC4yIDEuNiAwIDMuNFYxNDBoMTI4MHoiIGZpbGwtb3BhY2l0eT0iLjMiLz48cGF0aCBkPSJNMCAyNC4zMWM0My40Ni01LjY5IDk0LjU2LTkuMjUgMTU4LjQyLTkuMjUgMzIwIDAgMzIwIDg5LjI0IDY0MCA4OS4yNCAyNTYuMTMgMCAzMDcuMjgtNTcuMTYgNDgxLjU4LTgwVjE0MEgweiIgZmlsbC1vcGFjaXR5PSIuNSIvPjxwYXRoIGQ9Ik0xMjgwIDUxLjc2Yy0yMDEgMTIuNDktMjQyLjQzIDUzLjQtNTEzLjU4IDUzLjQtMzIwIDAtMzIwLTU3LTY0MC01Ny00OC44NS4wMS05MC4yMSAxLjM1LTEyNi40MiAzLjZWMTQwaDEyODB6Ii8+PC9nPjwvc3ZnPg==');
+            background-size: 100% 100%;
+            opacity: 0.1;
+            z-index: 0;
+        }
+        
+        .header-section .container {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header-section h1 {
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+        
+        .header-section .lead {
+            font-size: 1.25rem;
+            font-weight: 300;
+            opacity: 0.9;
+        }
+        
+        /* セクション共通スタイル */
+        .section {
+            margin-bottom: 3.5rem;
+            background-color: white;
+            border-radius: 12px;
+            padding: 2.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        /* データカード */
+        .data-card {
+            background-color: var(--light-color);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+        }
+        
+        .data-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+        
+        .data-card h4 {
+            margin-bottom: 1rem;
+            font-weight: 600;
+            font-size: 1.2rem;
+        }
+        
+        .data-card-primary {
+            background-color: var(--primary-light);
+            border-left: 4px solid var(--primary-color);
+        }
+        
+        .data-card-success {
+            background-color: var(--secondary-light);
+            border-left: 4px solid var(--secondary-color);
+        }
+        
+        .data-card-warning {
+            background-color: var(--warning-light);
+            border-left: 4px solid var(--warning-color);
+        }
+        
+        /* フッター */
+        .footer {
+            background-color: var(--dark-color);
+            color: white;
+            padding: 2.5rem 0;
+            margin-top: 3rem;
+        }
+        
+        .footer h4 {
+            font-weight: 600;
+            margin-bottom: 1rem;
+        }
+        
+        .footer p {
+            opacity: 0.8;
+        }
+        
+        /* チャートコンテナ */
+        .chart-container {
+            position: relative;
+            height: 300px;
+            margin-bottom: 2rem;
+        }
+        
+        /* テーブルスタイル */
+        .table {
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        
+        .table thead th {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            padding: 1rem;
+            font-weight: 500;
+        }
+        
+        .table tbody td {
+            padding: 1rem;
+            border-color: #edf2f7;
+        }
+        
+        .table tbody tr:nth-child(odd) {
+            background-color: #f8fafc;
+        }
+        
+        .table tbody tr:hover {
+            background-color: #f1f5f9;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-section">
+        <div class="container">
+            <h1 class="display-4">個人別タイムスタディ分析</h1>
+            <p class="lead">宮崎県ケアプランデータ連携システム導入効果の個人レベル評価</p>
+            <div class="mt-4">
+                <a href="index.html" class="btn btn-outline-light">
+                    <i class="bi bi-arrow-left me-2"></i>全体レポートに戻る
+                </a>
+                <a href="jigyosho.html" class="btn btn-outline-light ms-3">
+                    <i class="bi bi-building me-2"></i>事業所別分析を見る
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="section">
+            <h2>個人調査の概要</h2>
+            <div class="row">
+                <div class="col-md-7">
+                    <p>本分析では、宮崎県内の介護支援専門員を対象としたタイムスタディ調査の結果を分析し、ケアプランデータ連携システム導入前後での業務効率や作業時間の変化を個人レベルで評価しています。</p>
+                    <p>調査では、各担当者の業務時間、作業内容、ツール活用状況などを詳細に把握し、導入効果を現場レベルで検証しています。</p>
+                </div>
+                <div class="col-md-5">
+                    <div class="data-card data-card-success">
+                        <h4>調査データ</h4>
+                        <p><strong>回答者属性:</strong> 介護支援専門員、管理者</p>
+                        <p><strong>回答者数:</strong> 導入前89名、導入後111名</p>
+                        <p><strong>実施期間:</strong> 2024年1月〜2月</p>
+                    </div>
+                    <div class="mt-3">
+                        <a href="kojin-data-before.html" class="btn btn-outline-success mb-2 w-100">
+                            <i class="bi bi-file-earmark-text"></i> 導入前調査の詳細データを見る
+                        </a>
+                        <a href="kojin-data-after.html" class="btn btn-outline-success w-100">
+                            <i class="bi bi-file-earmark-text"></i> 導入後調査の詳細データを見る
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>業務時間削減効果</h2>
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="chart-container">
+                        <canvas id="timeReductionChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <h3>平均業務時間の変化</h3>
+                    <p>ケアプランデータ連携システムの導入により、ケアプラン作成・共有に関わる一連の業務時間が導入前と比較して平均30%短縮されました。特にデータ入力や送受信作業における時間削減効果が顕著に表れています。</p>
+                    
+                    <h3>主な改善点</h3>
+                    <ul>
+                        <li>FAX送信準備時間の削減（印刷・仕分け作業の省略）</li>
+                        <li>データ再入力作業の削減</li>
+                        <li>送信確認作業の簡素化</li>
+                        <li>検索・履歴確認の効率化</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>作業フロー改善効果</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <h3>従来の作業フロー（導入前）</h3>
+                    <div class="data-card">
+                        <ol>
+                            <li>ケアプラン作成</li>
+                            <li>印刷</li>
+                            <li>事業所ごとに仕分け</li>
+                            <li>FAX送信・郵送</li>
+                            <li>送信確認の電話</li>
+                            <li>書類整理・保管</li>
+                        </ol>
+                        <p class="text-danger"><i class="bi bi-exclamation-triangle"></i> 多くの手作業と確認作業が必要</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <h3>改善された作業フロー（導入後）</h3>
+                    <div class="data-card data-card-success">
+                        <ol>
+                            <li>ケアプラン作成</li>
+                            <li>連携システムでの送信</li>
+                            <li>システム上で送信完了確認</li>
+                        </ol>
+                        <p class="text-success"><i class="bi bi-check-circle"></i> 作業ステップが約半分に削減</p>
+                    </div>
+                </div>
+            </div>
+            <div class="row mt-4">
+                <div class="col-12">
+                    <h3>作業満足度の変化</h3>
+                    <div class="chart-container">
+                        <canvas id="satisfactionChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>業務改善の声</h2>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="data-card">
+                        <h4><i class="bi bi-quote"></i> 担当ケアマネジャーの声</h4>
+                        <p>「FAXでの送信作業や確認の電話が減り、本来の利用者支援に集中できるようになりました。また、過去の記録を探す手間も省けるようになりました。」</p>
+                        <p class="text-muted">- 介護支援専門員（経験5年）</p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="data-card">
+                        <h4><i class="bi bi-quote"></i> 管理者の声</h4>
+                        <p>「スタッフの事務作業負担が減り、訪問や相談の時間を増やすことができました。また、紙の削減によりコスト削減や保管スペースの問題も解消されつつあります。」</p>
+                        <p class="text-muted">- 居宅介護支援事業所管理者</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>宮崎県ケアプランデータ連携システム導入効果レポート</h4>
+                    <p>本レポートは、宮崎県における介護事業所を対象としたケアプランデータ連携システム導入の効果を検証するために実施したタイムスタディ調査の結果をまとめたものです。</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p>© タダカヨ｜タダでカイゴをヨクしよう</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script>
+        // 業務時間削減効果のグラフ
+        const timeReductionCtx = document.getElementById('timeReductionChart').getContext('2d');
+        const timeReductionChart = new Chart(timeReductionCtx, {
+            type: 'bar',
+            data: {
+                labels: ['ケアプラン作成', 'データ入力', '送受信作業', '確認・フォロー'],
+                datasets: [
+                    {
+                        label: '導入前（分/件）',
+                        data: [45, 30, 25, 20],
+                        backgroundColor: 'rgba(37, 99, 235, 0.6)',
+                        borderColor: 'rgba(37, 99, 235, 1)',
+                        borderWidth: 1
+                    },
+                    {
+                        label: '導入後（分/件）',
+                        data: [40, 15, 8, 10],
+                        backgroundColor: 'rgba(16, 185, 129, 0.6)',
+                        borderColor: 'rgba(16, 185, 129, 1)',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: '業務工程別の平均所要時間比較'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: '所要時間（分/件）'
+                        }
+                    }
+                }
+            }
+        });
+        
+        // 満足度の変化グラフ
+        const satisfactionCtx = document.getElementById('satisfactionChart').getContext('2d');
+        const satisfactionChart = new Chart(satisfactionCtx, {
+            type: 'radar',
+            data: {
+                labels: ['操作性', '業務効率', '情報共有のしやすさ', '作業負担感', 'データの正確性'],
+                datasets: [
+                    {
+                        label: '導入前',
+                        data: [50, 40, 30, 30, 60],
+                        backgroundColor: 'rgba(37, 99, 235, 0.2)',
+                        borderColor: 'rgba(37, 99, 235, 0.8)',
+                        pointBackgroundColor: 'rgba(37, 99, 235, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(37, 99, 235, 1)'
+                    },
+                    {
+                        label: '導入後',
+                        data: [70, 85, 80, 75, 85],
+                        backgroundColor: 'rgba(16, 185, 129, 0.2)',
+                        borderColor: 'rgba(16, 185, 129, 0.8)',
+                        pointBackgroundColor: 'rgba(16, 185, 129, 1)',
+                        pointBorderColor: '#fff',
+                        pointHoverBackgroundColor: '#fff',
+                        pointHoverBorderColor: 'rgba(16, 185, 129, 1)'
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    r: {
+                        angleLines: {
+                            display: true
+                        },
+                        suggestedMin: 0,
+                        suggestedMax: 100
+                    }
+                },
+                plugins: {
+                    title: {
+                        display: true,
+                        text: '業務満足度の変化（100点満点）'
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

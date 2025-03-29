@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>事業所別タイムスタディ分析 | 宮崎県ケアプランデータ連携システム</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.css">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        /* メインのCSSスタイル - index.htmlと同じスタイルを使用 */
+        :root {
+            --primary-color: #2563eb;
+            --primary-light: #dbeafe;
+            --primary-dark: #1e40af;
+            --secondary-color: #10b981;
+            --secondary-light: #d1fae5;
+            --warning-color: #f59e0b;
+            --warning-light: #fef3c7;
+            --info-color: #6366f1;
+            --info-light: #e0e7ff;
+            --dark-color: #1f2937;
+            --light-color: #f9fafb;
+            --gray-color: #6b7280;
+            --transition-speed: 0.3s;
+        }
+        
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            line-height: 1.8;
+            color: var(--dark-color);
+            background-color: #f8f9fa;
+            overflow-x: hidden;
+        }
+        
+        /* スクロールバーのカスタマイズ */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: var(--primary-color);
+            border-radius: 10px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: var(--primary-dark);
+        }
+        
+        /* ヘッダーセクション */
+        .header-section {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 3rem 0;
+            margin-bottom: 2.5rem;
+            background-image: linear-gradient(135deg, var(--primary-color) 0%, var(--info-color) 100%);
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .header-section::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMTAwJSIgaGVpZ2h0PSIxMDAlIiB2aWV3Qm94PSIwIDAgMTI4MCAxNDAiIHByZXNlcnZlQXNwZWN0UmF0aW89Im5vbmUiIHhtbG5zPSJodHRwOi8vd3d3LnczLm9yZy8yMDAwL3N2ZyI+PGcgZmlsbD0iI2ZmZmZmZiI+PHBhdGggZD0iTTEyODAgMy40QzEwNTAuNTkgMTggMTAxOS40IDg0Ljg5IDczNC40MiA4NC44OWMtMzIwIDAtMzIwLTg0LjMtNjQwLTg0LjNDNTkuNC41OSAyOC4yIDEuNiAwIDMuNFYxNDBoMTI4MHoiIGZpbGwtb3BhY2l0eT0iLjMiLz48cGF0aCBkPSJNMCAyNC4zMWM0My40Ni01LjY5IDk0LjU2LTkuMjUgMTU4LjQyLTkuMjUgMzIwIDAgMzIwIDg5LjI0IDY0MCA4OS4yNCAyNTYuMTMgMCAzMDcuMjgtNTcuMTYgNDgxLjU4LTgwVjE0MEgweiIgZmlsbC1vcGFjaXR5PSIuNSIvPjxwYXRoIGQ9Ik0xMjgwIDUxLjc2Yy0yMDEgMTIuNDktMjQyLjQzIDUzLjQtNTEzLjU4IDUzLjQtMzIwIDAtMzIwLTU3LTY0MC01Ny00OC44NS4wMS05MC4yMSAxLjM1LTEyNi40MiAzLjZWMTQwaDEyODB6Ii8+PC9nPjwvc3ZnPg==');
+            background-size: 100% 100%;
+            opacity: 0.1;
+            z-index: 0;
+        }
+        
+        .header-section .container {
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header-section h1 {
+            font-weight: 700;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 1rem;
+        }
+        
+        .header-section .lead {
+            font-size: 1.25rem;
+            font-weight: 300;
+            opacity: 0.9;
+        }
+        
+        /* セクション共通スタイル */
+        .section {
+            margin-bottom: 3.5rem;
+            background-color: white;
+            border-radius: 12px;
+            padding: 2.5rem;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            transition: transform var(--transition-speed), box-shadow var(--transition-speed);
+            overflow: hidden;
+            position: relative;
+        }
+        
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+        
+        /* 他のスタイルは基本的にindex.htmlと同じなので省略します */
+        /* 必要に応じて、CSSをコピーしてください */
+    </style>
+</head>
+<body>
+    <div class="header-section">
+        <div class="container">
+            <h1 class="display-4">事業所別タイムスタディ分析</h1>
+            <p class="lead">宮崎県ケアプランデータ連携システム導入効果の事業所レベル評価</p>
+            <div class="mt-4">
+                <a href="index.html" class="btn btn-outline-light">
+                    <i class="bi bi-arrow-left me-2"></i>全体レポートに戻る
+                </a>
+                <a href="kojin.html" class="btn btn-outline-light ms-3">
+                    <i class="bi bi-person me-2"></i>個人別分析を見る
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="section">
+            <h2>事業所調査の概要</h2>
+            <div class="row">
+                <div class="col-md-7">
+                    <p>本分析では、宮崎県内の介護事業所を対象としたタイムスタディ調査の結果を分析し、ケアプランデータ連携システム導入前後での業務効率や運用状況の変化を事業所レベルで評価しています。</p>
+                    <p>調査では、各事業所における介護ソフトの利用状況、連携システムの活用状況、ケアプラン・提供票の共有方法などを詳細に把握し、導入効果を多角的に検証しています。</p>
+                </div>
+                <div class="col-md-5">
+                    <div class="data-card data-card-primary">
+                        <h4>調査データ</h4>
+                        <p><strong>導入前調査:</strong> 92事業所</p>
+                        <p><strong>導入後調査:</strong> 93事業所</p>
+                        <p><strong>実施期間:</strong> 2024年1月〜2月</p>
+                    </div>
+                    <div class="mt-3">
+                        <a href="jigyosho-data-before.html" class="btn btn-outline-primary mb-2 w-100">
+                            <i class="bi bi-file-earmark-text"></i> 導入前調査の詳細データを見る
+                        </a>
+                        <a href="jigyosho-data-after.html" class="btn btn-outline-primary w-100">
+                            <i class="bi bi-file-earmark-text"></i> 導入後調査の詳細データを見る
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>連携システム利用状況の変化</h2>
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="chart-container">
+                        <canvas id="systemUsageChart"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <h3>導入率の向上</h3>
+                    <p>国保中央会ケアプランデータ連携システムの利用率は、導入前の25%から導入後の45%へと大幅に向上しました。これにより、デジタルでのケアプラン情報共有が可能な事業所が大幅に増加しています。</p>
+                    
+                    <h3>導入効果</h3>
+                    <div class="row mt-4">
+                        <div class="col-sm-6">
+                            <div class="data-card data-card-success">
+                                <h4>主な改善点</h4>
+                                <ul>
+                                    <li>情報共有の迅速化</li>
+                                    <li>印刷・FAX業務の削減</li>
+                                    <li>データ転記ミスの低減</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="col-sm-6">
+                            <div class="data-card data-card-warning">
+                                <h4>継続課題</h4>
+                                <ul>
+                                    <li>連携先事業所の未対応</li>
+                                    <li>操作性の問題</li>
+                                    <li>介護ソフトとの連携</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- 続きのセクションはここに追加 -->
+        
+    </div>
+
+    <div class="footer">
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <h4>宮崎県ケアプランデータ連携システム導入効果レポート</h4>
+                    <p>本レポートは、宮崎県における介護事業所を対象としたケアプランデータ連携システム導入の効果を検証するために実施したタイムスタディ調査の結果をまとめたものです。</p>
+                </div>
+                <div class="col-md-6 text-md-end">
+                    <p>© タダカヨ｜タダでカイゴをヨクしよう</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@3.7.1/dist/chart.min.js"></script>
+    <script>
+        // システム利用率グラフ
+        const systemUsageCtx = document.getElementById('systemUsageChart').getContext('2d');
+        const systemUsageChart = new Chart(systemUsageCtx, {
+            type: 'bar',
+            data: {
+                labels: ['導入前', '導入後'],
+                datasets: [{
+                    label: '国保中央会ケアプランデータ連携システム利用率',
+                    data: [25, 45],
+                    backgroundColor: [
+                        'rgba(37, 99, 235, 0.6)',
+                        'rgba(16, 185, 129, 0.6)',
+                    ],
+                    borderColor: [
+                        'rgba(37, 99, 235, 1)',
+                        'rgba(16, 185, 129, 1)',
+                    ],
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'top',
+                    },
+                    title: {
+                        display: true,
+                        text: '連携システム利用率の変化'
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100,
+                        ticks: {
+                            callback: function(value) {
+                                return value + '%';
+                            }
+                        }
+                    }
+                }
+            }
+        });
+    </script>
+</body>
+</html>

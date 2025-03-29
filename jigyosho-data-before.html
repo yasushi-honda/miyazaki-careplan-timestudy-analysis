@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>事業所別タイムスタディ調査票（導入前）データ | 宮崎県ケアプランデータ連携システム</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.0/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@300;400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-light: #dbeafe;
+            --primary-dark: #1e40af;
+            --secondary-color: #10b981;
+            --secondary-light: #d1fae5;
+            --warning-color: #f59e0b;
+            --warning-light: #fef3c7;
+            --info-color: #6366f1;
+            --info-light: #e0e7ff;
+            --dark-color: #1f2937;
+            --light-color: #f9fafb;
+            --gray-color: #6b7280;
+        }
+        
+        body {
+            font-family: 'Noto Sans JP', sans-serif;
+            line-height: 1.8;
+            color: var(--dark-color);
+            background-color: #f8f9fa;
+        }
+        
+        .header-section {
+            background-color: var(--primary-color);
+            color: white;
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            background-image: linear-gradient(135deg, var(--primary-color) 0%, var(--info-color) 100%);
+            position: relative;
+        }
+        
+        .content-container {
+            background-color: white;
+            border-radius: 8px;
+            padding: 2rem;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            margin-bottom: 2rem;
+        }
+        
+        .markdown-content {
+            font-size: 1rem;
+        }
+        
+        .markdown-content h1, 
+        .markdown-content h2, 
+        .markdown-content h3, 
+        .markdown-content h4 {
+            margin-top: 1.5rem;
+            margin-bottom: 1rem;
+            font-weight: 600;
+        }
+        
+        .markdown-content h1 {
+            font-size: 1.8rem;
+            border-bottom: 2px solid var(--primary-light);
+            padding-bottom: 0.5rem;
+        }
+        
+        .markdown-content h2 {
+            font-size: 1.5rem;
+            border-bottom: 1px solid var(--primary-light);
+            padding-bottom: 0.3rem;
+        }
+        
+        .markdown-content h3 {
+            font-size: 1.3rem;
+        }
+        
+        .markdown-content h4 {
+            font-size: 1.1rem;
+        }
+        
+        .markdown-content ul, 
+        .markdown-content ol {
+            padding-left: 1.5rem;
+            margin-bottom: 1rem;
+        }
+        
+        .markdown-content li {
+            margin-bottom: 0.5rem;
+        }
+        
+        .markdown-content p {
+            margin-bottom: 1rem;
+        }
+        
+        .markdown-content strong {
+            font-weight: 600;
+        }
+        
+        .markdown-content table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 1.5rem;
+        }
+        
+        .markdown-content table th {
+            background-color: var(--primary-light);
+            padding: 0.75rem;
+            text-align: left;
+            border: 1px solid #e5e7eb;
+            font-weight: 600;
+        }
+        
+        .markdown-content table td {
+            padding: 0.75rem;
+            border: 1px solid #e5e7eb;
+        }
+        
+        .markdown-content table tr:nth-child(even) {
+            background-color: #f9fafb;
+        }
+        
+        .download-link {
+            display: inline-block;
+            margin-top: 1rem;
+            padding: 0.5rem 1rem;
+            background-color: var(--secondary-color);
+            color: white;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        
+        .download-link:hover {
+            background-color: var(--secondary-color);
+            opacity: 0.9;
+            color: white;
+        }
+        
+        .back-link {
+            display: inline-block;
+            margin-top: 1rem;
+            margin-right: 1rem;
+            padding: 0.5rem 1rem;
+            background-color: var(--gray-color);
+            color: white;
+            border-radius: 4px;
+            text-decoration: none;
+            transition: background-color 0.3s;
+        }
+        
+        .back-link:hover {
+            background-color: var(--dark-color);
+            color: white;
+        }
+        
+        .footer {
+            background-color: var(--dark-color);
+            color: white;
+            padding: 2rem 0;
+            margin-top: 3rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="header-section">
+        <div class="container">
+            <h1>事業所別タイムスタディ調査票（導入前）データ</h1>
+            <p class="lead">宮崎県ケアプランデータ連携システム導入前の調査結果</p>
+        </div>
+    </div>
+    
+    <div class="container">
+        <div class="content-container">
+            <div class="d-flex justify-content-between mb-4">
+                <div>
+                    <a href="jigyosho.html" class="back-link"><i class="bi bi-arrow-left"></i> 事業所別分析に戻る</a>
+                    <a href="index.html" class="back-link"><i class="bi bi-house"></i> トップページに戻る</a>
+                </div>
+                <div>
+                </div>
+            </div>
+            
+            <div class="markdown-content">
+                <h2>宮崎県 事業所別タイムスタディ調査票 分析結果</h2>
+                
+                <h3>分析概要</h3>
+                <p>本分析は、宮崎県内の介護事業所92件から得られたタイムスタディ調査票の回答結果に基づき、介護ソフトの利用状況、ケアプランデータ連携システムの導入状況、情報共有方法の実態などを明らかにすることを目的とします。</p>
+
+                <h3>回答事業所の属性</h3>
+                <ul>
+                    <li><strong>有効回答数:</strong> 92件</li>
+                    <li><strong>主なサービス種別:</strong>
+                        <ul>
+                            <li>（介護予防）通所介護: 29件 (31.5%)</li>
+                            <li>居宅介護支援: 21件 (22.8%)</li>
+                            <li>（介護予防）訪問介護: 7件 (7.6%)</li>
+                            <li>（介護予防）短期入所生活介護: 7件 (7.6%)</li>
+                            <li>（介護予防）福祉用具貸与（特定福祉用具販売含む）: 4件 (4.3%)</li>
+                            <li>介護予防支援: 2件 (2.2%)</li>
+                            <li>（介護予防）訪問看護: 2件 (2.2%)</li>
+                            <li>（介護予防）小規模多機能型居宅介護: 2件 (2.2%)</li>
+                            <li>（介護予防）通所リハビリテーション: 2件 (2.2%)</li>
+                            <li>その他（訪問入浴、地域密着型など）: 6件</li>
+                        </ul>
+                    </li>
+                </ul>
+                <p><em>通所介護と居宅介護支援事業所からの回答が多く、全体の半数以上を占めています。</em></p>
+
+                <h3>介護ソフトの利用状況</h3>
+                <ul>
+                    <li><strong>主な利用ソフト:</strong>
+                        <ul>
+                            <li>ほのぼのNEXT: 23件 (25.0%)</li>
+                            <li>カイポケ: 17件 (18.5%)</li>
+                            <li>パシフィックシステム (パシフィック含む): 15件 (16.3%)</li>
+                            <li>富士通ウィンケア: 4件 (4.3%)</li>
+                            <li>ケアマネくん: 3件 (3.3%)</li>
+                            <li>寿 (寿システム含む): 3件 (3.3%)</li>
+                            <li>ケアカルテ: 3件 (3.3%)</li>
+                            <li>ほのぼのmini2: 2件 (2.2%)</li>
+                            <li>ケアレンツ: 2件 (2.2%)</li>
+                            <li>その他（トリケアトプス, ナーシングネットプラスワン, カナミック, スイスイレモン, 福祉システム）: 各1件</li>
+                            <li>使用していない: 1件 (1.1%)</li>
+                        </ul>
+                    </li>
+                </ul>
+                <p><em>「ほのぼのNEXT」「カイポケ」「パシフィックシステム」が主要な介護ソフトとして利用されており、これらで約6割を占めます。ほとんどの事業所で何らかの介護ソフトが導入されています。</em></p>
+
+                <h3>国保中央会 ケアプランデータ連携システムの利用状況</h3>
+                <ul>
+                    <li><strong>利用している:</strong> 23件 (25.0%)</li>
+                    <li><strong>利用していない:</strong> 69件 (75.0%)</li>
+                </ul>
+                <p><em>国保中央会のケアプランデータ連携システムの利用率は25%に留まっており、まだ普及が進んでいない状況です。</em></p>
+
+                <h3>ケアプランや提供票等の共有方法</h3>
+                <p>ケアプランや提供票等の事業所間での共有は、依然として <strong>FAXと持参が主流</strong>であり、業務効率化の観点からは課題があると考えられます。メールや介護ソフト連携、国保連携システム等のデジタルツールの活用は一部に留まっています。</p>
+                <p>事業規模には大きな差があり、それに伴い情報共有の対象となる事業所数や利用者数も大きく異なります。</p>
+                <p>情報共有に関わる業務には、概ね少人数の担当者が従事しています。</p>
+
+                <h3>今後の示唆</h3>
+                <p>ケアプランデータ連携システムの導入により、FAXや持参といった従来の共有方法から効率的なデジタル連携への移行を促進することで、業務負担の軽減や情報共有の迅速化、ヒューマンエラーの低減などの効果が期待されます。</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="container-fluid footer mt-5 py-3">
+        <div class="container">
+            <p class="text-center mb-0">© タダカヨ｜タダでカイゴをヨクしよう</p>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
