@@ -1,5 +1,0 @@
-# SPAへのリダイレクト設定
-# /about              /                   301
-/business           /                   301
-/individual         /                   301
-/*                  /index.html         200
