@@ -13,86 +13,148 @@
             color: #333;
             background-color: #f8f9fa;
         }
+
+        /* ヘッダーセクションのスタイル改善 */
         .header-section {
-            background-color: #0d6efd;
+            background: linear-gradient(135deg, #2563eb 0%, #1e40af 100%);
             color: white;
-            padding: 2rem 0;
+            padding: 3rem 0;
             margin-bottom: 2rem;
-            background-image: linear-gradient(135deg, #0d6efd 0%, #0099ff 100%);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
         }
+        
+        .header-section h1 {
+            font-weight: 700;
+            margin-bottom: 1rem;
+            line-height: 1.3;
+        }
+        
+        .header-section .lead {
+            font-size: 1.25rem;
+            font-weight: 400;
+            opacity: 0.9;
+        }
+
+        /* セクションのスタイル改善 */
         .section {
-            margin-bottom: 3rem;
+            margin-bottom: 2.5rem;
+            padding: 2rem;
             background-color: white;
             border-radius: 8px;
-            padding: 2rem;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
         }
-        h1, h2, h3, h4 {
-            font-weight: 700;
+        
+        .section:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.1);
         }
-        h2 {
-            border-bottom: 2px solid #0d6efd;
-            padding-bottom: 0.5rem;
+        
+        .section h2 {
+            color: #1e40af;
             margin-bottom: 1.5rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid #dbeafe;
         }
-        h3 {
-            margin-top: 1.5rem;
-            margin-bottom: 1rem;
-            color: #0d6efd;
-        }
-        .chart-container {
-            position: relative;
-            height: 300px;
-            margin-bottom: 2rem;
-        }
-        .highlight-box {
-            background-color: #e9f7fe;
-            border-left: 4px solid #0d6efd;
-            padding: 1rem;
-            margin: 1.5rem 0;
-            border-radius: 4px;
-        }
+
+        /* データカードのスタイル */
         .data-card {
+            background-color: white;
             border-radius: 8px;
             padding: 1.5rem;
             margin-bottom: 1.5rem;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-            transition: transform 0.3s;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            transition: transform 0.3s, box-shadow 0.3s;
+            border-left: 4px solid transparent;
         }
+        
         .data-card:hover {
             transform: translateY(-5px);
+            box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
         }
+        
         .data-card-primary {
-            background-color: #e9f7fe;
-            border-left: 4px solid #0d6efd;
+            border-left-color: #2563eb;
         }
-        .data-card-success {
-            background-color: #e9fef5;
-            border-left: 4px solid #28a745;
+        
+        .data-card-secondary {
+            border-left-color: #10b981;
         }
+        
         .data-card-warning {
-            background-color: #fff8e9;
-            border-left: 4px solid #ffc107;
+            border-left-color: #f59e0b;
         }
-        .data-card-info {
-            background-color: #f5f5ff;
-            border-left: 4px solid #6610f2;
+        
+        /* ハイライトボックス */
+        .highlight-box {
+            background-color: #f0f9ff;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border-left: 4px solid #2563eb;
         }
-        .key-figure {
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: #0d6efd;
-            margin-bottom: 0.5rem;
+        
+        .highlight-box h4 {
+            color: #1e40af;
+            margin-bottom: 1rem;
         }
-        .table-responsive {
+        
+        .highlight-box ul {
+            margin-bottom: 0;
+        }
+        
+        /* ボタンスタイルの改善 */
+        .btn {
+            padding: 0.6rem 1.5rem;
+            border-radius: 6px;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+        
+        .btn-primary {
+            background-color: #2563eb;
+            border-color: #2563eb;
+        }
+        
+        .btn-primary:hover {
+            background-color: #1e40af;
+            border-color: #1e40af;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+        }
+        
+        .btn-success {
+            background-color: #10b981;
+            border-color: #10b981;
+        }
+        
+        .btn-success:hover {
+            background-color: #059669;
+            border-color: #059669;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(16, 185, 129, 0.3);
+        }
+        
+        /* チャートコンテナ */
+        .chart-container {
+            position: relative;
+            height: 400px;
             margin-bottom: 2rem;
         }
+        
+        /* フッター */
         .footer {
-            background-color: #343a40;
+            background-color: #1f2937;
             color: white;
-            padding: 2rem 0;
+            padding: 2.5rem 0;
             margin-top: 3rem;
         }
+        
+        .footer h4 {
+            font-weight: 600;
+            margin-bottom: 1.25rem;
+        }
+        
         .testimonial {
             font-style: italic;
             background-color: #f8f9fa;
@@ -101,6 +163,7 @@
             margin-bottom: 1.5rem;
             position: relative;
         }
+        
         .testimonial:before {
             content: '"';
             font-size: 4rem;
@@ -109,30 +172,37 @@
             top: -1rem;
             color: #dee2e6;
         }
+        
         .comparison-table th {
             background-color: #f8f9fa;
         }
+        
         .comparison-table .better {
             color: #28a745;
             font-weight: bold;
         }
+        
         .comparison-table .worse {
             color: #dc3545;
         }
+        
         .icon-box {
             text-align: center;
             margin-bottom: 2rem;
         }
+        
         .icon-box i {
             font-size: 3rem;
             color: #0d6efd;
             margin-bottom: 1rem;
         }
+        
         .timeline {
             position: relative;
             padding-left: 2rem;
             margin-bottom: 2rem;
         }
+        
         .timeline:before {
             content: '';
             position: absolute;
@@ -142,10 +212,12 @@
             width: 4px;
             background-color: #0d6efd;
         }
+        
         .timeline-item {
             position: relative;
             padding-bottom: 1.5rem;
         }
+        
         .timeline-item:before {
             content: '';
             position: absolute;
@@ -156,6 +228,7 @@
             border-radius: 50%;
             background-color: #0d6efd;
         }
+        
         .progress-bar-container {
             height: 30px;
             background-color: #e9ecef;
@@ -163,6 +236,7 @@
             margin-bottom: 1rem;
             overflow: hidden;
         }
+        
         .progress-bar {
             height: 100%;
             background-color: #0d6efd;
@@ -177,7 +251,7 @@
 <body>
     <div class="header-section">
         <div class="container">
-            <h1 class="display-4">宮崎県ケアプランデータ連携システム導入効果レポート</h1>
+            <h1 class="display-4">宮崎県ケアプランデータ連携システム<br>導入効果レポート</h1>
             <p class="lead">介護業務の効率化と生産性向上を実現するデジタル化の成果</p>
         </div>
     </div>
